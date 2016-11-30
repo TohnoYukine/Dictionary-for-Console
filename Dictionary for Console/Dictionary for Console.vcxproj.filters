@@ -33,10 +33,10 @@
     <ClInclude Include="Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WildcardString.h">
+    <ClInclude Include="Names.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Names.h">
+    <ClInclude Include="WildcardWstringSupport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClCompile Include="Definitions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WildcardString.cpp">
+    <ClCompile Include="WildcardWstringSupport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

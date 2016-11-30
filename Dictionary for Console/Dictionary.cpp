@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Dictionary.h"
 #include "QueryResult.h"
-#include "WildcardString.h"
+#include "WildcardWstringSupport.h"
 
 #define DEPRECATE_MARKED_CODE
 

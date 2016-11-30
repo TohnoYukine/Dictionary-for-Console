@@ -1,8 +1,10 @@
 #include "stdafx.h"
 
-#include "WildcardString.h"
+#include "WildcardWstringSupport.h"
 #include "Dictionary.h"
 #include "QueryResult.h"
+
+#define NDEBUG
 
 
 void WildcardWstringSupport::initialize_WildcardPrefix()
@@ -37,9 +39,9 @@ bool WildcardWstringSupport::reverse_wstring_less(const std::wstring & lhs, cons
 	std::wstring::size_type rsz = rhs.size();
 	for (int i = 0; i != lsz && i != rsz; ++i)
 	{
-		if (lhs[lsz - i] == rhs[rsz - i])
+		if (lhs[lsz - 1 - i] == rhs[rsz - 1 - i])
 			continue;
-		else if (lhs[lsz - i] < rhs[rsz - i])
+		else if (lhs[lsz - 1 - i] < rhs[rsz - 1 - i])
 			return true;
 		else
 			return false;
@@ -51,16 +53,19 @@ bool WildcardWstringSupport::reverse_wstring_less(const std::wstring & lhs, cons
 
 WildcardWstringSupport::WildcardType WildcardWstringSupport::check_wildcard_type(const std::wstring & wstr)
 {
-	if (wstr.find(L'?') != std::wstring::npos)
+	if (wstr.find(L' ') != std::wstring::npos)
 	{
-		if (wstr.find(L'*') != std::wstring::npos || wstr.find(L' ') != std::wstring::npos)
+		if (wstr.find(L'*') != std::wstring::npos)
+			return WildcardWord;
+		else
+			return NoWildcard;
+	}
+	else if (wstr.find(L'?') != std::wstring::npos)
+	{
+		if (wstr.find(L'*') != std::wstring::npos)
 			return Unsupported;
 		else
 			return FixedPosition;
-	}
-	else if (wstr.find(L' ') != std::wstring::npos)
-	{
-		return WildcardWord;
 	}
 	else
 	{
@@ -108,6 +113,7 @@ QueryResult WildcardWstringSupport::query_wildcard(const std::wstring & wstr)
 		std::wstring lower_substr = wstr.substr(0, wstr.find(L'*'));
 		std::wstring upper_substr(lower_substr);
 		++upper_substr[upper_substr.size() - 1];
+		
 		for (auto iter = WildcardSuffix_MapTo_Dictionary->lower_bound(lower_substr);
 			iter != WildcardSuffix_MapTo_Dictionary->lower_bound(upper_substr);
 			++iter)
@@ -118,6 +124,12 @@ QueryResult WildcardWstringSupport::query_wildcard(const std::wstring & wstr)
 		std::wstring lower_substr = wstr.substr(wstr.find(L'*') + 1);
 		std::wstring upper_substr(lower_substr);
 		++upper_substr[0];
+
+#ifdef DEBUG
+		auto var1 = WildcardPrefix_MapTo_Dictionary->lower_bound(lower_substr)->first;
+		auto var2 = WildcardPrefix_MapTo_Dictionary->lower_bound(upper_substr)->first;
+#endif // DEBUG
+
 		for (auto iter = WildcardPrefix_MapTo_Dictionary->lower_bound(lower_substr);
 			iter != WildcardPrefix_MapTo_Dictionary->lower_bound(upper_substr);
 			++iter)
@@ -134,7 +146,8 @@ QueryResult WildcardWstringSupport::query_wildcard(const std::wstring & wstr)
 			iter != WildcardSuffix_MapTo_Dictionary->lower_bound(upper_substr);
 			++iter)
 		{
-			if (iter->first.find(suffix_substr, pos))
+			if (iter->first.size() >= wstr.size() - 1 &&
+				iter->first.substr(iter->first.size() - suffix_substr.size()) == suffix_substr)
 				result->push_back(iter->second);
 		}
 	}
@@ -143,15 +156,33 @@ QueryResult WildcardWstringSupport::query_wildcard(const std::wstring & wstr)
 		std::wistringstream phrase(wstr);
 		std::wstring word;
 		std::vector<std::wstring> words;
+		std::deque<std::wstring> words2;
+		std::deque<std::wstring> words3;
 		while (phrase >> word)
+		{
 			if (word != L"*" && word != L"?")
 				words.push_back(word);
+			words2.push_back(word);
+		}
 		for (auto &wd : words)
 		{
-			for (auto iter = WildcardSuffix_MapTo_Dictionary->lower_bound(wd);
-				iter != WildcardSuffix_MapTo_Dictionary->upper_bound(wd);
+			for (auto iter = WildcardWord_MapTo_Dictionary->lower_bound(wd);
+				iter != WildcardWord_MapTo_Dictionary->upper_bound(wd);
 				++iter)
+			{
+				std::wistringstream phrase2(iter->second->first);
+				std::wstring word2;
+				words3.clear();
+				while (phrase2 >> word2)
+					words3.push_back(word2);
+				if (words2.front() != L"*" && words2.front() != L"?")
+					if (words3.front() != words2.front())
+						continue;
+				if (words2.back() != L"*" && words2.back() != L"?")
+					if (words3.back() != words2.back())
+						continue;
 				result->push_back(iter->second);
+			}
 		}
 	}
 	else

@@ -94,7 +94,19 @@ void QueryResult::print_raw() const
 
 std::wstring QueryResult::get_raw()
 {
-	return std::wstring((*begin())->second.begin()->second);
+	std::wstring ret;
+	for (auto &iter : *result)
+	{
+		ret += iter->first;
+		ret += L'\t';
+		for (auto &details : iter->second)
+		{
+			ret += details.second;
+			ret += L'\t';
+		}
+		ret += L'\n';
+	}
+	return ret;
 }
 
 bool QueryResult::empty()

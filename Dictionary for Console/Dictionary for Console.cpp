@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
 	wcout << L"Dictionary initialized!" << endl;
 	wstring word2;
 	while (std::getline(wcin, word2))
-		my_dictionary.query_wildcard(word2).print();
+		wcout << my_dictionary.query_wildcard(word2).get_raw();
 
     return 0;
 }
