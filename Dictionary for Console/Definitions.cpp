@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Definitions.h"
 
-Definitions::Attribute Definitions::DefaultAttribute(L"Default");
+Definitions::Attribute Definitions::DefaultAttribute(u8"Default");
 Definitions::Description Definitions::DefaultDescription;
 
 Definitions::Definitions()
@@ -29,18 +29,18 @@ Definitions::Definitions(AttributeList _attibutes, std::initializer_list<Descrip
 		entry_details.insert(std::make_pair(*iter++, description));
 }
 
-Definitions::Definitions(wchar_t delim, std::initializer_list<Attribute> _attibutes)
+Definitions::Definitions(char delim, std::initializer_list<Attribute> _attibutes)
 {
 	Attribute attr;
 	Description desc;
 	for (auto &rawline : _attibutes)
 	{
-		std::wistringstream line(rawline);
-		while (iswspace(line.peek()))	line.get();
+		std::istringstream line(rawline);
+		while (isspace(line.peek()))	line.get();
 		std::getline(line, attr, delim);
 		if (attr.empty())
 			attr = DefaultAttribute;
-		while (iswspace(line.peek()))	line.get();
+		while (isspace(line.peek()))	line.get();
 		std::getline(line, desc);
 		entry_details.insert(std::make_pair(attr, desc));
 	}

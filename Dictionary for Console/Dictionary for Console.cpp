@@ -22,32 +22,52 @@
 #include "Definitions.h"
 #include "QueryResult.h"
 
-using std::wifstream;
-using std::wofstream;
-using std::wistringstream;
-using std::wostringstream;
-using std::wcin;
-using std::wcout;
+using std::ifstream;
+using std::ofstream;
+using std::istringstream;
+using std::ostringstream;
+using std::cin;
+using std::cout;
 using std::endl;
 using std::string;
-using std::wstring;
 
-const wstring sample_02(LR"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary - Customized.txt)");
-const wstring sample_01(LR"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Cambridge Advanced Learner's Dictionary.txt)");
+const string sample_02(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary.txt)");
+const string sample_01(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Cambridge Advanced Learner's Dictionary.txt)");
 
 int main(int argc, char *argv[])
 {
-	wifstream wifile(sample_01, wifstream::in);
-	Dictionary my_dictionary(wifile, L'\t', L'\n');
+	cout << u8"Choose a dictionary(1/2): \n"
+		<< "1.Cambridge Advanced Learner's Dictionary\n"
+		<< "2.Oxford Advanced Learner's Dictionary" << endl;
+
+	ifstream ifile;
+	size_t chosen;
+	while (cin >> chosen)
+	{
+		if (chosen == 1)
+		{
+			ifile.open(sample_01);
+			break;
+		}
+		else if (chosen == 2)
+		{
+			ifile.open(sample_02);
+			break;
+		}
+		else
+			continue;
+	}
+	
+	Dictionary my_dictionary(ifile, u8'\t', u8'\n');
 //	string cword(argv[1]);
 //	wstring word(cword.begin(), cword.end());
 //	wstring temp(my_dictionary.query(word).get_raw());
 //	wcout << temp << endl;
 	my_dictionary.enable_wildcard();
-	wcout << L"Dictionary initialized!" << endl;
-	wstring word2;
-	while (std::getline(wcin, word2))
-		wcout << my_dictionary.query_wildcard(word2).get_raw();
+	cout << u8"Dictionary initialized!" << endl;
+	string word2;
+	while (std::getline(cin, word2))
+		cout << my_dictionary.query_wildcard(word2).get_raw();
 
     return 0;
 }

@@ -1,18 +1,18 @@
 #include "stdafx.h"
 #include "Dictionary.h"
 #include "QueryResult.h"
-#include "WildcardWstringSupport.h"
+#include "WildcardStringSupport.h"
 
 #define DEPRECATE_MARKED_CODE
 
-std::wstring Dictionary::default_category(L"Default");
+std::string Dictionary::default_category(u8"Default");
 Dictionary::EntryWord Dictionary::InvalidWord;
 Definitions Dictionary::InvalidDefinition;
 Dictionary::Entry_type Dictionary::InvalidEntry(InvalidWord, InvalidDefinition);
 
-inline void Dictionary::get_data(std::wistream & is, wchar_t delim1, wchar_t delim2)
+inline void Dictionary::get_data(std::istream & is, char delim1, char delim2)
 {
-	std::wstring line;
+	std::string line;
 	size_t line_cnt = 0;
 	while (iswspace(is.peek())) is.get();
 	if (data_mode == RawDataOnly)
@@ -21,7 +21,7 @@ inline void Dictionary::get_data(std::wistream & is, wchar_t delim1, wchar_t del
 		{
 			std::getline(is, line, delim2);
 			++line_cnt;
-			temp_entries.push_back(wstring_to_entry(line, delim1));
+			temp_entries.push_back(string_to_entry(line, delim1));
 			while (iswspace(is.peek()) && !is.eof()) is.get();
 		}
 		is_synchronized = Asynchronous;
@@ -32,7 +32,7 @@ inline void Dictionary::get_data(std::wistream & is, wchar_t delim1, wchar_t del
 		{
 			std::getline(is, line, delim2);
 			++line_cnt;
-			dictionary->insert(wstring_to_entry(line, delim1));
+			dictionary->insert(string_to_entry(line, delim1));
 			while (iswspace(is.peek()) && !is.eof()) is.get();
 		}
 		is_synchronized = Asynchronous;
@@ -43,28 +43,28 @@ inline void Dictionary::get_data(std::wistream & is, wchar_t delim1, wchar_t del
 		{
 			std::getline(is, line, delim2);
 			++line_cnt;
-			Entry_type new_entry(wstring_to_entry(line, delim1));
+			Entry_type new_entry(string_to_entry(line, delim1));
 			temp_entries.push_back(new_entry);
 			dictionary->insert(new_entry);
 			while (iswspace(is.peek()) && !is.eof()) is.get();
 		}
 		is_synchronized = Synchronous;
 	}
-//	std::wcout << L"Data loading completed." << std::endl;
+//	std::cout << u8"Data loading completed." << std::endl;
 }
 
-inline Dictionary::Entry_type Dictionary::wstring_to_entry(std::wstring s, wchar_t delim)
+inline Dictionary::Entry_type Dictionary::string_to_entry(std::string s, char delim)
 {
-	std::wistringstream istrm(s);
+	std::istringstream istrm(s);
 	EntryWord newWord;
-	std::wstring temp;
+	std::string temp;
 	while (iswspace(istrm.peek())) istrm.get();
 	if (!istrm.eof())
 	{
 		try
 		{
 			std::getline(istrm, newWord, delim);
-			newWord = newWord.substr(0, newWord.find_last_not_of(L" \t\n") + 1);
+			newWord = newWord.substr(0, newWord.find_last_not_of(u8" \t\n") + 1);
 			if (newWord.empty())
 				throw std::runtime_error("No Word!");
 		}
@@ -85,7 +85,7 @@ inline Dictionary::Entry_type Dictionary::wstring_to_entry(std::wstring s, wchar
 		}
 		catch (std::runtime_error input_fail)
 		{
-			std::wcerr << newWord << L":\t" << input_fail.what() << std::endl;
+			std::cerr << newWord << u8":\t" << input_fail.what() << std::endl;
 			return InvalidEntry;
 		}
 	}
@@ -106,66 +106,66 @@ Dictionary::Dictionary(DataMode _mode) :
 	is_synchronized(Synchronous),
 	data_mode(_mode),
 	category(default_category),
-	wildcard_wstring_mapping(new WildcardWstringSupport())
+	wildcard_string_mapping(new WildcardStringSupport())
 {
 }
 
-Dictionary::Dictionary(std::wistream & is, DataMode _mode) :
-	Dictionary(is, default_category, L' ', L'\n', _mode) {}
+Dictionary::Dictionary(std::istream & is, DataMode _mode) :
+	Dictionary(is, default_category, u8' ', u8'\n', _mode) {}
 
-Dictionary::Dictionary(std::wistream & is, wchar_t delim, DataMode _mode) :
-	Dictionary(is, default_category, L' ', delim, _mode) {}
+Dictionary::Dictionary(std::istream & is, char delim, DataMode _mode) :
+	Dictionary(is, default_category, u8' ', delim, _mode) {}
 
-Dictionary::Dictionary(std::wistream & is, wchar_t delim1, wchar_t delim2, DataMode _mode) :
+Dictionary::Dictionary(std::istream & is, char delim1, char delim2, DataMode _mode) :
 	Dictionary(is, default_category, delim1, delim2, _mode) {}
 
-Dictionary::Dictionary(std::wistream & is, std::wstring _category, DataMode _mode) :
-	Dictionary(is, _category, L' ', L'\n', _mode) {}
+Dictionary::Dictionary(std::istream & is, std::string _category, DataMode _mode) :
+	Dictionary(is, _category, u8' ', u8'\n', _mode) {}
 
-Dictionary::Dictionary(std::wistream & is, std::wstring _category, wchar_t delim, DataMode _mode) :
-	Dictionary(is, _category, L' ', delim, _mode) {}
+Dictionary::Dictionary(std::istream & is, std::string _category, char delim, DataMode _mode) :
+	Dictionary(is, _category, u8' ', delim, _mode) {}
 
-Dictionary::Dictionary(std::wistream & is, std::wstring _category, wchar_t delim1, wchar_t delim2, DataMode _mode) :
+Dictionary::Dictionary(std::istream & is, std::string _category, char delim1, char delim2, DataMode _mode) :
 	temp_entries(),
 	dictionary(new Dictionary_type()),
 	is_complete(Complete),
 	data_mode(_mode),
 	category(_category),
-	wildcard_wstring_mapping(new WildcardWstringSupport())
+	wildcard_string_mapping(new WildcardStringSupport())
 {
 	is_sorted = (data_mode == RawDataOnly) ? Unsorted : Sorted;
 	is_complete = (data_mode == DictionaryOnly) ? Incomplete : Complete;
 	get_data(is, delim1, delim2);
 }
 
-Dictionary::Dictionary(std::wifstream & ifile, DataMode _mode) :
-	Dictionary(ifile, default_category, L' ', L'\n', _mode) {}
+Dictionary::Dictionary(std::ifstream & ifile, DataMode _mode) :
+	Dictionary(ifile, default_category, u8' ', u8'\n', _mode) {}
 
-Dictionary::Dictionary(std::wifstream & ifile, wchar_t delim, DataMode _mode) :
-	Dictionary(ifile, default_category, L' ', delim, _mode) {}
+Dictionary::Dictionary(std::ifstream & ifile, char delim, DataMode _mode) :
+	Dictionary(ifile, default_category, u8' ', delim, _mode) {}
 
-Dictionary::Dictionary(std::wifstream & ifile, wchar_t delim1, wchar_t delim2, DataMode _mode) :
+Dictionary::Dictionary(std::ifstream & ifile, char delim1, char delim2, DataMode _mode) :
 	Dictionary(ifile, default_category, delim1, delim2, _mode) {}
 
-Dictionary::Dictionary(std::wifstream & ifile, std::wstring _category, DataMode _mode) :
-	Dictionary(ifile, _category, L' ', L'\n', _mode) {}
+Dictionary::Dictionary(std::ifstream & ifile, std::string _category, DataMode _mode) :
+	Dictionary(ifile, _category, u8' ', u8'\n', _mode) {}
 
-Dictionary::Dictionary(std::wifstream & ifile, std::wstring _category, wchar_t delim, DataMode _mode) :
-	Dictionary(ifile, _category, L' ', delim, _mode) {}
+Dictionary::Dictionary(std::ifstream & ifile, std::string _category, char delim, DataMode _mode) :
+	Dictionary(ifile, _category, u8' ', delim, _mode) {}
 
-Dictionary::Dictionary(std::wifstream & ifile, std::wstring _category, wchar_t delim1, wchar_t delim2, DataMode _mode) :
+Dictionary::Dictionary(std::ifstream & ifile, std::string _category, char delim1, char delim2, DataMode _mode) :
 	temp_entries(), 
 	dictionary(new Dictionary_type()),
 	is_complete(Complete),
 	data_mode(_mode),
 	category(_category),
-	wildcard_wstring_mapping(new WildcardWstringSupport())
+	wildcard_string_mapping(new WildcardStringSupport())
 {
 	is_sorted = (data_mode == RawDataOnly) ? Unsorted : Sorted;
 	is_complete = (data_mode == DictionaryOnly) ? Incomplete : Complete;
 	if (!ifile.eof())
 	{
-		std::wstringstream file_buf;
+		std::stringstream file_buf;
 		file_buf << ifile.rdbuf();
 		get_data(file_buf, delim1, delim2);
 	}
@@ -179,7 +179,7 @@ Dictionary::Dictionary(std::initializer_list<Entry_type> entries, DataMode _mode
 	is_complete(Complete),
 	data_mode(_mode),
 	category(default_category),
-	wildcard_wstring_mapping(new WildcardWstringSupport())
+	wildcard_string_mapping(new WildcardStringSupport())
 {
 	is_sorted = (data_mode == RawDataOnly) ? Unsorted : Sorted;
 	is_complete = (data_mode == DictionaryOnly) ? Incomplete : Complete;
@@ -215,7 +215,7 @@ Dictionary::Dictionary(const Dictionary &origin) :
 	is_synchronized(origin.is_synchronized),
 	data_mode(origin.data_mode),
 	category(default_category),
-	wildcard_wstring_mapping(origin.wildcard_wstring_mapping)
+	wildcard_string_mapping(origin.wildcard_string_mapping)
 {
 }
 
@@ -228,7 +228,7 @@ Dictionary & Dictionary::swap(Dictionary &rhs)
 	std::swap(is_complete, rhs.is_complete);
 	std::swap(is_synchronized, rhs.is_synchronized);
 	std::swap(data_mode, rhs.data_mode);
-	std::swap(wildcard_wstring_mapping, rhs.wildcard_wstring_mapping);
+	std::swap(wildcard_string_mapping, rhs.wildcard_string_mapping);
 	return *this;
 }
 
@@ -236,9 +236,9 @@ Dictionary::~Dictionary()
 {
 }
 
-void Dictionary::emplace_back(const std::wstring &wstr, wchar_t delim)
+void Dictionary::emplace_back(const std::string &str, char delim)
 {
-	temp_entries.push_back(wstring_to_entry(wstr, delim));
+	temp_entries.push_back(string_to_entry(str, delim));
 
 	is_sorted = Unsorted;
 	is_complete = is_complete;
@@ -263,14 +263,14 @@ void Dictionary::push_back(const Entry_type & new_entry)
 	is_synchronized = Asynchronous;
 }
 
-void Dictionary::emplace(const std::wstring &wstr, wchar_t delim, DataMode _mode)
+void Dictionary::emplace(const std::string &str, char delim, DataMode _mode)
 {
 	data_mode = _mode;
 
 	if (is_sorted == Unsorted)
 		throw std::runtime_error("Unsorted Dictionary!");
 
-	Entry_type newEntry(wstring_to_entry(wstr, delim));
+	Entry_type newEntry(string_to_entry(str, delim));
 	dictionary->insert(newEntry);
 
 	if (data_mode == RawAndDictionary)
@@ -375,9 +375,9 @@ std::shared_ptr<Dictionary::Entry_type> Dictionary::erase_entry(QueryResult & wo
 	return deleted_entry;
 }
 
-void Dictionary::add_entry(const std::wstring &wstr, wchar_t delim)
+void Dictionary::add_entry(const std::string &str, char delim)
 {
-	Entry_type newEntry(wstring_to_entry(wstr, delim));
+	Entry_type newEntry(string_to_entry(str, delim));
 	temp_entries.push_back(newEntry);
 	if (is_sorted == Sorted)
 		dictionary->insert(newEntry);
@@ -391,14 +391,14 @@ void Dictionary::add_entry(const EntryWord & _entryword, const Definitions & _de
 		dictionary->insert(newEntry);
 }
 
-void Dictionary::set_category(std::wstring _category)
+void Dictionary::set_category(std::string _category)
 {
 	category = _category;
 }
 
 void Dictionary::enable_wildcard()
 {
-	wildcard_wstring_mapping.reset(new WildcardWstringSupport(*this));
+	wildcard_string_mapping.reset(new WildcardStringSupport(*this));
 }
 
 void Dictionary::sort()
@@ -412,29 +412,29 @@ void Dictionary::sort()
 	is_sorted = Sorted;
 }
 
-bool Dictionary::query_print(std::wstring word)
+bool Dictionary::query_print(std::string word)
 {
 	if (is_sorted == Sorted)
 	{
 		size_t entries = 0;
-		std::wostringstream query_result;
+		std::ostringstream query_result;
 		for (auto iter = dictionary->lower_bound(word); iter != dictionary->upper_bound(word); ++iter)
 		{
 			++entries;
 //			query_result << iter->first << "\t" << iter->second << std::endl;
 		}
-		std::wcout << "Entries found: " << entries << std::endl;
-		std::wcout << query_result.str() << std::endl;
+		std::cout << "Entries found: " << entries << std::endl;
+		std::cout << query_result.str() << std::endl;
 		return (entries != 0);
 	}
 	else
 	{
-		std::wcerr << L"Querying with unsorted dictionary is currently unsupported. Please sort first." << std::endl;
+		std::wcerr << u8"Querying with unsorted dictionary is currently unsupported. Please sort first." << std::endl;
 		return false;
 	}
 }
 
-QueryResult Dictionary::query(std::wstring word)
+QueryResult Dictionary::query(std::string word)
 {
 	std::shared_ptr<QueryResult::result_type> result(new QueryResult::result_type());
 	if (is_sorted == Unsorted)
@@ -447,7 +447,7 @@ QueryResult Dictionary::query(std::wstring word)
 	return QueryResult(word, dictionary, result);
 }
 
-QueryResult Dictionary::query_wildcard(std::wstring wdc_word)
+QueryResult Dictionary::query_wildcard(std::string wdc_word)
 {
-	return wildcard_wstring_mapping->query_wildcard(wdc_word);
+	return wildcard_string_mapping->query_wildcard(wdc_word);
 }

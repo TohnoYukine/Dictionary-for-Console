@@ -2,7 +2,7 @@
 #include "QueryResult.h"
 
 
-QueryResult::QueryResult(std::wstring _word,
+QueryResult::QueryResult(std::string _word,
 	std::shared_ptr<Dictionary::Dictionary_type> _ptr_dictionary,
 	std::shared_ptr<result_type> _result) :
 	word(_word), dictionary(_ptr_dictionary), result(_result) {}
@@ -72,13 +72,13 @@ QueryResult::iterator QueryResult::erase(size_type pos)
 
 void QueryResult::print() const
 {
-	std::wcout << word << "\t" << result->size() << (result->size() <= 1 ? " entry found." : " entries found.") << std::endl;
+	std::cout << word << "\t" << result->size() << (result->size() <= 1 ? " entry found." : " entries found.") << std::endl;
 	//This part is not completed until operator<< is overloaded for Definitions 
 	for (auto &iter : *result)
 	{
-		std::wcout << iter->first << std::endl;
+		std::cout << iter->first << std::endl;
 		for (auto &details : iter->second)
-			std::wcout << details.first << L":\t" << details.second << std::endl;
+			std::cout << details.first << u8":\t" << details.second << std::endl;
 	}
 }
 
@@ -86,25 +86,25 @@ void QueryResult::print_raw() const
 {
 	for (auto &iter : *result)
 	{
-		std::wcout << iter->first << std::endl;
+		std::cout << iter->first << std::endl;
 		for (auto &details : iter->second)
-			std::wcout << details.first << L":\t" << details.second << std::endl;
+			std::cout << details.first << u8":\t" << details.second << std::endl;
 	}
 }
 
-std::wstring QueryResult::get_raw()
+std::string QueryResult::get_raw()
 {
-	std::wstring ret;
+	std::string ret;
 	for (auto &iter : *result)
 	{
 		ret += iter->first;
-		ret += L'\t';
+		ret += u8'\t';
 		for (auto &details : iter->second)
 		{
 			ret += details.second;
-			ret += L'\t';
+			ret += u8'\t';
 		}
-		ret += L'\n';
+		ret += u8'\n';
 	}
 	return ret;
 }

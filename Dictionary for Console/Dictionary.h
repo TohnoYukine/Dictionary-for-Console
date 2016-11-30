@@ -21,19 +21,19 @@
 #define FUTURE_FEATURES_UNIMPLEMENTED
 
 class QueryResult;								//Allows user to query as well as add entries
-class WildcardWstringSupport;
+class WildcardStringSupport;
 class Dictionary
 {
 	friend class QueryResult;
-	friend class WildcardWstringSupport;
+	friend class WildcardStringSupport;
 
 public:
-	using EntryWord = std::wstring;
+	using EntryWord = std::string;
 	using Entry_type = std::pair<EntryWord, Definitions>;
 	using Entry_iterator = std::multimap<EntryWord, Definitions>::iterator;
 	using Dictionary_type = std::multimap<EntryWord, Definitions>;
 
-	static std::wstring default_category;
+	static std::string default_category;
 	static EntryWord InvalidWord;
 	static Definitions InvalidDefinition;
 	static Entry_type InvalidEntry;
@@ -67,15 +67,15 @@ private:
 	RawDataState is_complete;							//Indicate whether temp_entries is a complete copy of all entries. Default is Complete. When clear_raw_data() called, set to Incomplete.
 	SynchronizationState is_synchronized;				//Indicate whether dictionary and temp_entries is synchronized. Marked for deprecation.
 
-	std::wstring category;								//User may use different dictionaries. Used to check whether Dictionary can be combined.
+	std::string category;								//User may use different dictionaries. Used to check whether Dictionary can be combined.
 	std::vector<Entry_type> temp_entries;				//Used to temporarily store data, including invalid entries, which are excluded in sort().
 	std::shared_ptr<Dictionary_type> dictionary;
-	std::shared_ptr<WildcardWstringSupport> wildcard_wstring_mapping;
+	std::shared_ptr<WildcardStringSupport> wildcard_string_mapping;
 
 private:
 //Assisting member functions used to do actual work.
-	inline void get_data(std::wistream &is, wchar_t delim1 = L'\0', wchar_t delim2 = L'\n');	//delim2 separate entries, delim1 separate entry word and definition
-	inline Entry_type wstring_to_entry(std::wstring s, wchar_t delim);
+	inline void get_data(std::istream &is, char delim1 = u8'\0', char delim2 = u8'\n');	//delim2 separate entries, delim1 separate entry word and definition
+	inline Entry_type string_to_entry(std::string s, char delim);
 	inline size_t check_working_state();
 
 public:
@@ -84,19 +84,19 @@ public:
 
 	//delim separates entries
 	//delim2 separate entries, delim1 separate entry word and definition
-	explicit Dictionary(std::wistream &is, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wistream &is, wchar_t delim, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wistream &is, wchar_t delim1, wchar_t delim2, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wistream &is, std::wstring _category, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wistream &is, std::wstring _category, wchar_t delim, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wistream &is, std::wstring _category, wchar_t delim1, wchar_t delim2, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::istream &is, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::istream &is, char delim, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::istream &is, char delim1, char delim2, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::istream &is, std::string _category, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::istream &is, std::string _category, char delim, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::istream &is, std::string _category, char delim1, char delim2, DataMode _mode = DictionaryOnly);
 
-	explicit Dictionary(std::wifstream &ifile, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wifstream &ifile, wchar_t delim, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wifstream &ifile, wchar_t delim1, wchar_t delim2, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wifstream &ifile, std::wstring _category, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wifstream &ifile, std::wstring _category, wchar_t delim, DataMode _mode = DictionaryOnly);
-	explicit Dictionary(std::wifstream &ifile, std::wstring _category, wchar_t delim1, wchar_t delim2, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::ifstream &ifile, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::ifstream &ifile, char delim, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::ifstream &ifile, char delim1, char delim2, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::ifstream &ifile, std::string _category, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::ifstream &ifile, std::string _category, char delim, DataMode _mode = DictionaryOnly);
+	explicit Dictionary(std::ifstream &ifile, std::string _category, char delim1, char delim2, DataMode _mode = DictionaryOnly);
 
 	explicit Dictionary(std::initializer_list<Entry_type> entries, DataMode _mode = DictionaryOnly);
 
@@ -134,14 +134,14 @@ public:
 
 	//With _back, class works like a sequential container.
 	//Following functions are used to fast build up dictionary in memory.
-	void emplace_back(const std::wstring &wstr, wchar_t delim);	//Add lots of entries to temp_entries, set is_sorted as Unsorted.
+	void emplace_back(const std::string &str, char delim);	//Add lots of entries to temp_entries, set is_sorted as Unsorted.
 	void emplace_back(const EntryWord &_entryword, const Definitions &_definitions);
 	void push_back(const Entry_type &new_entry);
 
 	//Without _back, class works like an associative container plus a sequential container.
 	//Following functions are used to add new entries to a sorted dictionary.
 	//DataMode defaultly set as DictionaryOnly. When adding a backup at temp_entries, specify RawAndDictionary.
-	void emplace(const std::wstring &, wchar_t delim, DataMode _mode = DictionaryOnly);
+	void emplace(const std::string &, char delim, DataMode _mode = DictionaryOnly);
 	void emplace(const EntryWord &_entryword, const Definitions &_definitions, DataMode _mode = DictionaryOnly);
 	void insert(const Entry_type &new_entry, DataMode _mode = DictionaryOnly);
 
@@ -158,7 +158,7 @@ public:
 	std::shared_ptr<Entry_type> erase_entry(QueryResult &words, Dictionary_type::size_type pos);
 
 //User friendly functions for noobs. To be honest, the STL functions can substitute them.
-	void add_entry(const std::wstring &wstr, wchar_t delim);
+	void add_entry(const std::string &str, char delim);
 	void add_entry(const EntryWord &_entryword, const Definitions &_definitions);
 	
 
@@ -173,20 +173,20 @@ public:
 	void operator>>(const Entry_type &);		//Parameter type may need modify
 
 	//This two are used to deal with complicated formats, which should be handled by user. sort() is needed.
-	Entry_iterator lower_bound(const std::wstring &);
-	Entry_iterator upper_bound(const std::wstring &);
+	Entry_iterator lower_bound(const std::string &);
+	Entry_iterator upper_bound(const std::string &);
 
 
 public:
-	void set_category(std::wstring _category);
+	void set_category(std::string _category);
 
 	void enable_wildcard();
 
-	bool query_print(std::wstring);				//Marked as deprecated, return false if no entry found.
+	bool query_print(std::string);				//Marked as deprecated, return false if no entry found.
 
 	//wildcard is considered as a normal character in word.
-	QueryResult query(std::wstring word);
+	QueryResult query(std::string word);
 	//wildcard 
-	QueryResult query_wildcard(std::wstring wdc_word);
+	QueryResult query_wildcard(std::string wdc_word);
 };
 

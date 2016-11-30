@@ -11,8 +11,8 @@
 
 class Definitions
 {
-	using Attribute = std::wstring;
-	using Description = std::wstring;
+	using Attribute = std::string;
+	using Description = std::string;
 	using AttributeList = std::vector<Attribute>;
 
 	using key_type = Attribute;
@@ -40,7 +40,7 @@ public:
 	explicit Definitions(AttributeList _attibutes, std::initializer_list<Description> _descriptions);
 	explicit Definitions(std::initializer_list<value_type> formatted_pairs);
 	//Initialize with a series of Attribute-Description pair. Delimiter must be specified.
-	explicit Definitions(wchar_t delim, std::initializer_list<Attribute> _attibutes);
+	explicit Definitions(char delim, std::initializer_list<Attribute> _attibutes);
 
 	~Definitions();
 

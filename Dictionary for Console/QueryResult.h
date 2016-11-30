@@ -31,10 +31,10 @@ public:
 private:
 	std::shared_ptr<Dictionary_type> dictionary;	//Shares data with Dictionary. dictionary will be accessible till all reference destroyed.
 	std::shared_ptr<result_type> result;			//Why using vector? multimap<T>::iterator is bidirectional iterator and has no operator<
-	std::wstring word;						
+	std::string word;						
 
 public:
-	QueryResult(std::wstring _word,
+	QueryResult(std::string _word,
 				std::shared_ptr<Dictionary_type> _ptr_dictionary,
 				std::shared_ptr<result_type> _result);
 	QueryResult(const QueryResult &origin);
@@ -65,7 +65,7 @@ public:
 
 	//Temporaries used for debug.
 	void print_raw() const;			
-	std::wstring get_raw();			//Only the first result is returned.
+	std::string get_raw();			//Only the first result is returned.
 
 	//Empty result, but not affect dictionary
 	bool empty();
