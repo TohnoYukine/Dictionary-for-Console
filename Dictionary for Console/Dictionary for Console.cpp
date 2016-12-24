@@ -22,6 +22,7 @@
 #include <MsXml6.h>
 
 #include "Core_Dictionary.h"
+#include "Generic_Dictionary.h"
 #include "Definitions.h"
 #include "QueryResult.h"
 #include "Win32ConsoleColor.h"
@@ -54,7 +55,7 @@ int main()
 
 	Win32ConsoleColor::Initialize_Win32ConsoleColor();
 
-	Core_Dictionary my_dictionary;
+	Generic_Dictionary my_dictionary;
 	ifstream ifile(sample_03);
 	while (!ifile.eof())
 		my_dictionary.insert(LingoesOxfordParser(ifile));
@@ -85,11 +86,10 @@ int main()
 				else if (result.size() != 0)
 				{
 					cout << Win32ConsoleColor(9) << result.size() << u8" entries found." << endl;
-					QueryResult raw(result);
-					for (int i = 0; i != raw.size(); ++i)
+					for (int i = 0; i != result.size(); ++i)
 						//using Entry_type = std::pair<EntryWord_type, Definition_type>
 						//this somehow leaks out some data from class.
-						cout << Win32ConsoleColor(14) << i << u8"." << Entry(*raw[i]).entry_word() << endl;
+						cout << Win32ConsoleColor(14) << i << u8"." << result[i].entry_word() << endl;
 					cout << endl;
 				}
 				else

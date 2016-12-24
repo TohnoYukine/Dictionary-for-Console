@@ -59,8 +59,7 @@ public:
 	iterator erase(iterator &first, iterator &last);
 	void clear();
 
-	value_type &operator[](size_type pos);
-	value_type operator[](size_type pos) const;
+	Entry operator[](size_type pos) const;
 
 	std::string queried_word() const;
 	

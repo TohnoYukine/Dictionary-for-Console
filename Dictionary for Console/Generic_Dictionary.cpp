@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Generic_Dictionary.h"
-
+#include "QueryResult.h"
 
 Generic_Dictionary::Generic_Dictionary(std::istream & is, Category_type _category) :
 	Generic_Dictionary(is, u8'\t', u8'\n', _category) {}
@@ -44,9 +44,27 @@ Generic_Dictionary & Generic_Dictionary::operator=(Generic_Dictionary && rhs)
 	wildcard_string_support.reset(dictionary);
 	regex_support.reset(dictionary);
 	rhs.clear();
+	return *this;
 }
 
-Generic_Dictionary::Generic_Dictionary() {}
+QueryResult Generic_Dictionary::query_dispatcher(const EntryWord_type & word)
+{
+	switch (WildcardStringSupport::check_wildcard_type(word))
+	{
+	case WildcardStringSupport::WildcardPrefix:
+	case WildcardStringSupport::WildcardSuffix:
+	case WildcardStringSupport::WildcardInfix:
+	case WildcardStringSupport::WildcardWord:
+		return wildcard_string_support.query_wildcard(word);
+	default:
+		return regex_support.query_regex(word);
+	}
+}
+
+Generic_Dictionary::Generic_Dictionary() :
+	Core_Dictionary(),
+	wildcard_string_support(dictionary),
+	regex_support(dictionary) {}
 
 
 Generic_Dictionary::~Generic_Dictionary() {}
@@ -96,6 +114,11 @@ std::shared_ptr<Generic_Dictionary::Entry_type> Generic_Dictionary::erase_entry(
 	wildcard_string_support.reset(dictionary);
 	regex_support.reset(dictionary);
 	return ret;
+}
+
+QueryResult Generic_Dictionary::query(const EntryWord_type & word)
+{
+	return query_dispatcher(word);
 }
 
 void Generic_Dictionary::operator+=(const Entry_type & entry)

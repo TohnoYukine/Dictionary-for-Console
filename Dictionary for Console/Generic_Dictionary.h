@@ -13,6 +13,7 @@
 #include <memory>
 #include <set>
 #include <cctype>
+#include <functional>
 
 #include "Core_Dictionary.h"
 #include "WildcardStringSupport.h"
@@ -26,6 +27,9 @@ private:
 private:
 	WildcardStringSupport wildcard_string_support;
 	RegexSupport regex_support;
+
+private:
+	QueryResult query_dispatcher(const EntryWord_type &word);
 
 public:
 	Generic_Dictionary();
@@ -64,7 +68,7 @@ public:
 	virtual std::shared_ptr<Dictionary_type> erase(QueryResult &words) override;
 	virtual std::shared_ptr<Entry_type> erase_entry(QueryResult &words, Dictionary_type::size_type pos) override;
 
-//	virtual QueryResult query(const EntryWord_type &word) override;
+	virtual QueryResult query(const EntryWord_type &word) override;
 
 public:
 	virtual void operator+=(const Entry_type &entry) override;		//Add Entry_type

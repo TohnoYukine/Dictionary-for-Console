@@ -164,8 +164,8 @@ std::shared_ptr<Core_Dictionary::Entry_type> Core_Dictionary::erase_entry(QueryR
 {
 	if (pos >= words.size())
 		return std::shared_ptr<Entry_type>();
-	std::shared_ptr<Entry_type> deleted_entry(new Entry_type(*words[pos]));
-	dictionary->erase(words[pos]);
+	std::shared_ptr<Entry_type> deleted_entry(new Entry_type(words[pos]));
+	dictionary->erase(*(words.begin() + pos));
 	words.erase(pos);
 	return deleted_entry;
 }

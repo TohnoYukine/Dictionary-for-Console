@@ -47,6 +47,11 @@ bool WildcardStringSupport::reverse_string_less(const std::string & lhs, const s
 	return false;
 }
 
+inline bool WildcardStringSupport::string_less(const std::string & lhs, const std::string & rhs)
+{
+	return lhs < rhs;
+}
+
 void WildcardStringSupport::emplace(const Core_Dictionary::Entry_iterator & new_entry)
 {
 	WildcardPrefix_MapTo_Dictionary->emplace(new_entry->first, new_entry);
@@ -80,8 +85,8 @@ void WildcardStringSupport::reset(std::shared_ptr<Core_Dictionary::Dictionary_ty
 	reset();
 	dictionary = _dictionary;
 	WildcardPrefix_MapTo_Dictionary.reset(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(reverse_string_less));
-	WildcardSuffix_MapTo_Dictionary.reset(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>());
-	WildcardWord_MapTo_Dictionary.reset(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>());
+	WildcardSuffix_MapTo_Dictionary.reset(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less));
+	WildcardWord_MapTo_Dictionary.reset(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less));
 	initialize_WildcardPrefix();
 	initialize_WildcardSuffix();
 	initialize_WildcardWord();
@@ -131,7 +136,7 @@ WildcardStringSupport::WildcardType WildcardStringSupport::check_wildcard_type(c
 	return WildcardType();
 }
 
-QueryResult WildcardStringSupport::query_wildcard(const std::string & str)
+QueryResult WildcardStringSupport::query_wildcard(const std::string & str) const
 {
 	std::shared_ptr<QueryResult::result_type> result(new QueryResult::result_type());
 	if (str.empty())
@@ -165,40 +170,7 @@ QueryResult WildcardStringSupport::query_wildcard(const std::string & str)
 
 	case WildcardWord:
 	{
-		std::istringstream phrase(str);
-		std::string word;
-		std::vector<std::string> words;
-		std::deque<std::string> words2;
-		std::deque<std::string> words3;
-		while (phrase >> word)
-		{
-			if (word != u8"*" && word != u8"?")
-				words.push_back(word);
-			words2.push_back(word);
-		}
-		for (auto &wd : words)
-		{
-			for (auto iter = WildcardWord_MapTo_Dictionary->lower_bound(wd);
-				iter != WildcardWord_MapTo_Dictionary->upper_bound(wd);
-				++iter)
-			{
-				std::istringstream phrase2(iter->second->first);
-				std::string word2;
-				words3.clear();
-				while (phrase2 >> word2)
-					words3.push_back(word2);
-
-				if (words2.front() != u8"*" && words2.front() != u8"?")
-					if (words3.front() != words2.front())
-						continue;
-				if (words2.back() != u8"*" && words2.back() != u8"?")
-					if (words3.back() != words2.back())
-						continue;
-
-				result->push_back(iter->second);
-			}
-		}
-		break;
+		return query_wildcard_word(str);
 	}
 
 	case FixedPosition:
@@ -226,7 +198,7 @@ QueryResult WildcardStringSupport::query_wildcard(const std::string & str)
 	return QueryResult(str, dictionary, result);
 }
 
-QueryResult WildcardStringSupport::query_wildcard_prefix(const std::string & str)
+QueryResult WildcardStringSupport::query_wildcard_prefix(const std::string & str) const
 {
 	std::shared_ptr<QueryResult::result_type> result(new QueryResult::result_type());
 
@@ -242,7 +214,7 @@ QueryResult WildcardStringSupport::query_wildcard_prefix(const std::string & str
 	return QueryResult(str, dictionary, result);
 }
 
-QueryResult WildcardStringSupport::query_wildcard_suffix(const std::string & str)
+QueryResult WildcardStringSupport::query_wildcard_suffix(const std::string & str) const
 {
 	std::shared_ptr<QueryResult::result_type> result(new QueryResult::result_type());
 
@@ -258,12 +230,12 @@ QueryResult WildcardStringSupport::query_wildcard_suffix(const std::string & str
 	return QueryResult(str, dictionary, result);
 }
 
-QueryResult WildcardStringSupport::query_wildcard_infix(const std::string & str)
+QueryResult WildcardStringSupport::query_wildcard_infix(const std::string & str) const
 {
 	return query_wildcard_prefix(str) | query_wildcard_suffix(str);
 }
 
-QueryResult WildcardStringSupport::query_wildcard_word(const std::string & str)
+QueryResult WildcardStringSupport::query_wildcard_word(const std::string & str) const
 {
 	std::shared_ptr<QueryResult::result_type> result(new QueryResult::result_type());
 
@@ -304,21 +276,12 @@ QueryResult WildcardStringSupport::query_wildcard_word(const std::string & str)
 	return QueryResult(str, dictionary, result);
 }
 
-WildcardStringSupport::WildcardStringSupport() :
-	dictionary(new Core_Dictionary::Dictionary_type()),
-	working_mode({ true,true,true,true,true,true }),
-	WildcardPrefix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(reverse_string_less)),
-	WildcardSuffix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>()),
-	WildcardWord_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>())
-{
-}
-
 WildcardStringSupport::WildcardStringSupport(const Core_Dictionary &dict) :
 	dictionary(dict.dictionary),
 	working_mode({ true,true,true,true,true,true }),
 	WildcardPrefix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(reverse_string_less)),
-	WildcardSuffix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>()),
-	WildcardWord_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>())
+	WildcardSuffix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less)),
+	WildcardWord_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less))
 {
 	initialize_WildcardPrefix();
 	initialize_WildcardSuffix();
@@ -329,8 +292,8 @@ WildcardStringSupport::WildcardStringSupport(std::shared_ptr<Core_Dictionary::Di
 	dictionary(_dictionary),
 	working_mode({ true,true,true,true,true,true }),
 	WildcardPrefix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(reverse_string_less)),
-	WildcardSuffix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>()),
-	WildcardWord_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>())
+	WildcardSuffix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less)),
+	WildcardWord_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less))
 {
 	initialize_WildcardPrefix();
 	initialize_WildcardSuffix();

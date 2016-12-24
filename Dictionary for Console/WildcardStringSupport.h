@@ -33,6 +33,7 @@ class WildcardStringSupport
 	//'?' can substitute no or one character.
 	//'*' and '?' cannot be used at same time.
 
+public:
 	enum WildcardType 
 	{
 		WildcardPrefix = 0,
@@ -73,6 +74,7 @@ private:
 	static bool reverse_string_less(const std::string &lhs, const std::string &rhs);
 	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardPrefix_MapTo_Dictionary;
 
+	inline static bool string_less(const std::string &lhs, const std::string &rhs);
 	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardSuffix_MapTo_Dictionary;
 
 	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardWord_MapTo_Dictionary;
@@ -97,19 +99,18 @@ private:
 	void reset(std::shared_ptr<Core_Dictionary::Dictionary_type> _dictionary);
 
 public:
-	WildcardType check_wildcard_type(const std::string &str);
+	static WildcardType check_wildcard_type(const std::string &str);
 
 private:
-	QueryResult query_wildcard(const std::string &str);
-	inline QueryResult query_wildcard_prefix(const std::string &str);
-	inline QueryResult query_wildcard_suffix(const std::string &str);
-	inline QueryResult query_wildcard_infix(const std::string &str);
-	inline QueryResult query_wildcard_word(const std::string &str);
+	QueryResult query_wildcard(const std::string &str) const;
+	inline QueryResult query_wildcard_prefix(const std::string &str) const;
+	inline QueryResult query_wildcard_suffix(const std::string &str) const;
+	inline QueryResult query_wildcard_infix(const std::string &str) const;
+	inline QueryResult query_wildcard_word(const std::string &str) const;
 
 
 public:
 	//Querying a Wildcardstring is time-consuming. User should know what they do.
-	explicit WildcardStringSupport();	//Used to default initialize WildcardStringSupport when a Core_Dictionary object is created.
 	explicit WildcardStringSupport(const Core_Dictionary &dict);
 	explicit WildcardStringSupport(std::shared_ptr<Core_Dictionary::Dictionary_type> _dictionary);
 

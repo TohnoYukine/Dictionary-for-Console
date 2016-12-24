@@ -33,12 +33,6 @@ void RegexSupport::reset(std::shared_ptr<Core_Dictionary::Dictionary_type> _dict
 	initialize_RegexSupport();
 }
 
-RegexSupport::RegexSupport() :
-	dictionary(new Core_Dictionary::Dictionary_type()),
-	String_PairTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator>())
-{
-}
-
 RegexSupport::RegexSupport(const Core_Dictionary & dict) :
 	dictionary(dict.dictionary),
 	String_PairTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator>())
@@ -61,7 +55,7 @@ RegexSupport::RegexSupport(RegexSupport && origin) :
 	dictionary(origin.dictionary),
 	String_PairTo_Dictionary(origin.String_PairTo_Dictionary) {}
 
-QueryResult RegexSupport::query_regex(const std::string & str)
+QueryResult RegexSupport::query_regex(const std::string & str) const
 {
 	const std::regex re(str);
 	std::shared_ptr<QueryResult::result_type> result(new QueryResult::result_type());

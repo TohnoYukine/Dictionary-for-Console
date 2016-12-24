@@ -42,7 +42,6 @@ private:
 	void reset(std::shared_ptr<Core_Dictionary::Dictionary_type> _dictionary);
 
 public:
-	explicit RegexSupport();
 	explicit RegexSupport(const Core_Dictionary &dict);
 	explicit RegexSupport(std::shared_ptr<Core_Dictionary::Dictionary_type> _dictionary);
 
@@ -50,7 +49,7 @@ public:
 	RegexSupport(RegexSupport &&origin);
 
 private:
-	QueryResult query_regex(const std::string &str);
+	QueryResult query_regex(const std::string &str) const;
 
 	~RegexSupport();
 };

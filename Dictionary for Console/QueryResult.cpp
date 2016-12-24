@@ -34,18 +34,11 @@ QueryResult::const_iterator QueryResult::cend() const
 	return result->cend();
 }
 
-QueryResult::value_type & QueryResult::operator[](size_type pos)
+Entry QueryResult::operator[](size_type pos) const
 {
 	if (pos >= result->size())
 		throw std::out_of_range("Subscript out of range!");
-	return result->operator[](pos);
-}
-
-QueryResult::value_type QueryResult::operator[](size_type pos) const
-{
-	if (pos >= result->size())
-		throw std::out_of_range("Subscript out of range!");
-	return value_type(result->operator[](pos));
+	return Entry(*result->operator[](pos));
 }
 
 QueryResult::size_type QueryResult::size() const
