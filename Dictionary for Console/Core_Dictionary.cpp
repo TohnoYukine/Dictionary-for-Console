@@ -225,9 +225,14 @@ Core_Dictionary::const_Entry_iterator Core_Dictionary::cend() const
 	return dictionary->cend();
 }
 
-void Core_Dictionary::set_category(Category_type _category)
+inline void Core_Dictionary::set_category(Category_type _category)
 {
 	category = _category;
+}
+
+inline Core_Dictionary::Category_type Core_Dictionary::get_category() const
+{
+	return category;
 }
 
 bool Core_Dictionary::query_print(const EntryWord_type &word) const
@@ -254,8 +259,8 @@ QueryResult Core_Dictionary::query(const EntryWord_type &word)
 
 std::ostream & operator<<(std::ostream & os, const Core_Dictionary::Entry_type & entry)
 {
-	os << entry.first << u8"\n";
-	os << entry.second;
+	os << entry.entry_word() << u8"\n";
+	os << entry.definitions();
 	return os;
 }
 

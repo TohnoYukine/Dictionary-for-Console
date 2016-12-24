@@ -17,16 +17,20 @@
 
 #include "Definitions.h"
 
-class QueryResult;								//Allows user to query as well as add entries
+class QueryResult;			//Allows user to query as well as add entries
+class Entry;
+class Entry_iterator;		//Some inner data leaks from std::multimap<EntryWord_type, Definition_type>::iterator, further encapsulation needed.
 class Core_Dictionary
 {
 public:
 	using Category_type = std::string;
 	using EntryWord_type = std::string;
 	using Definition_type = Definitions;
-	using Entry_type = std::pair<EntryWord_type, Definition_type>;
+//	using Entry_type = std::pair<EntryWord_type, Definition_type>;
+	using Entry_type = Entry;
 	using Dictionary_type = std::multimap<EntryWord_type, Definition_type>;
 	using Entry_iterator = std::multimap<EntryWord_type, Definition_type>::iterator;
+//	using Entry_iterator = Entry_iterator;
 	using const_Entry_iterator = std::multimap<EntryWord_type, Definition_type>::const_iterator;
 
 	static Category_type default_category;
@@ -94,21 +98,22 @@ public:
 	virtual void operator+=(const Core_Dictionary &rhs) = delete;	//Combine Library
 
 	//This two are used to deal with complicated formats, which should be handled by user.
-	Entry_iterator begin();
-	Entry_iterator end();
-	const_Entry_iterator begin() const;
-	const_Entry_iterator end() const;
-	const_Entry_iterator cbegin() const;
-	const_Entry_iterator cend() const;
+	inline Entry_iterator begin();
+	inline Entry_iterator end();
+	inline const_Entry_iterator begin() const;
+	inline const_Entry_iterator end() const;
+	inline const_Entry_iterator cbegin() const;
+	inline const_Entry_iterator cend() const;
 
-	Entry_iterator lower_bound(const EntryWord_type &str);
-	Entry_iterator upper_bound(const EntryWord_type &str);
-	const_Entry_iterator lower_bound(const EntryWord_type &str) const;
-	const_Entry_iterator upper_bound(const EntryWord_type &str) const;
+	inline Entry_iterator lower_bound(const EntryWord_type &str);
+	inline Entry_iterator upper_bound(const EntryWord_type &str);
+	inline const_Entry_iterator lower_bound(const EntryWord_type &str) const;
+	inline const_Entry_iterator upper_bound(const EntryWord_type &str) const;
 
 
 public:
-	void set_category(Category_type _category);
+	inline void set_category(Category_type _category);
+	inline Category_type get_category() const;
 
 	bool query_print(const EntryWord_type &word) const;				//Marked as deprecated, return false if no entry found.
 
@@ -119,3 +124,25 @@ std::ostream& operator<<(std::ostream &os, const Core_Dictionary::Entry_type &en
 
 bool operator<(Core_Dictionary::Entry_iterator lhs, Core_Dictionary::Entry_iterator rhs);
 bool operator<(Core_Dictionary::const_Entry_iterator lhs, Core_Dictionary::const_Entry_iterator rhs);
+
+class Entry : public std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>
+{
+private:
+	using std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::first;
+	using std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::second;
+
+public:
+	using std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::pair;
+
+	inline Core_Dictionary::EntryWord_type &entry_word() { return first; }
+	inline Core_Dictionary::Definition_type &definitions() { return second; }
+	inline const Core_Dictionary::EntryWord_type &entry_word() const { return first; }
+	inline const Core_Dictionary::Definition_type &definitions() const { return second; }
+};
+
+class Entry_iterator : public std::multimap<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::iterator
+{
+public:
+	inline Entry operator*() const { return Entry(std::multimap<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::iterator::operator*()); }
+	inline Entry *operator->() const { return &operator*(); }
+};

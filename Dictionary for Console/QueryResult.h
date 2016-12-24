@@ -47,13 +47,13 @@ public:
 	QueryResult(const QueryResult &origin);
 	~QueryResult();
 
-	iterator begin();
-	iterator end();
-	const_iterator cbegin() const;
-	const_iterator cend() const;
+	inline iterator begin();
+	inline iterator end();
+	inline const_iterator cbegin() const;
+	inline const_iterator cend() const;
 
-	size_type size() const;
-	bool empty() const;
+	inline size_type size() const;
+	inline bool empty() const;
 	iterator erase(iterator &iter);					//erase from QueryResult, but not from dictionary.
 	iterator erase(size_type pos);
 	iterator erase(iterator &first, iterator &last);

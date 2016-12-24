@@ -101,10 +101,10 @@ public:
 
 private:
 	QueryResult query_wildcard(const std::string &str);
-	QueryResult query_wildcard_prefix(const std::string &str);
-	QueryResult query_wildcard_suffix(const std::string &str);
-	QueryResult query_wildcard_infix(const std::string &str);
-	QueryResult query_wildcard_word(const std::string &str);
+	inline QueryResult query_wildcard_prefix(const std::string &str);
+	inline QueryResult query_wildcard_suffix(const std::string &str);
+	inline QueryResult query_wildcard_infix(const std::string &str);
+	inline QueryResult query_wildcard_word(const std::string &str);
 
 
 public:

@@ -89,7 +89,7 @@ int main()
 					for (int i = 0; i != raw.size(); ++i)
 						//using Entry_type = std::pair<EntryWord_type, Definition_type>
 						//this somehow leaks out some data from class.
-						cout << Win32ConsoleColor(14) << i << u8"." << raw[i]->first << endl;
+						cout << Win32ConsoleColor(14) << i << u8"." << Entry(*raw[i]).entry_word() << endl;
 					cout << endl;
 				}
 				else
