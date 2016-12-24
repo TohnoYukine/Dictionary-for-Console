@@ -7,6 +7,7 @@
 #include <iostream>
 #include <sstream>
 #include <cctype>
+#include <msxml.h>
 
 using std::wifstream;
 using std::wofstream;
@@ -16,11 +17,14 @@ using std::wcin;
 using std::wcout;
 using std::endl;
 using std::wstring;
+using std::string;
 
-const wstring sample_01(LR"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary.txt)");
-const wstring sample_02(LR"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary - Customized.txt)");
+const string sample_01(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary.txt)");
+const string sample_02(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary - Customized.txt)");
 
 
+
+/*
 int main()
 {
 	wifstream wifile(sample_01, wifstream::in);
@@ -71,3 +75,4 @@ int main()
     return 0;
 }
 
+*/

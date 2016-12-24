@@ -21,9 +21,6 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Dictionary.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="QueryResult.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -33,18 +30,24 @@
     <ClInclude Include="Definitions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Names.h">
+    <ClInclude Include="WildcardStringSupport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="WildcardStringSupport.h">
+    <ClInclude Include="Win32ConsoleColor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Core_Dictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegexSupport.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Generic_Dictionary.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Dictionary for Console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Dictionary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QueryResult.cpp">
@@ -57,6 +60,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="WildcardStringSupport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Win32ConsoleColor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Core_Dictionary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RegexSupport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Generic_Dictionary.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

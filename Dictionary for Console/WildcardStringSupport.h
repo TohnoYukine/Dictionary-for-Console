@@ -15,16 +15,16 @@
 #include <set>
 #include <cctype>
 
-#include "Dictionary.h"
+#include "Core_Dictionary.h"
 
 //How about inheritance? Yet unavailable.
 class QueryResult;
 class WildcardStringSupport
 {
-	friend class Dictionary;
+	friend class Generic_Dictionary;
 
 	using key_type = std::string;
-	using mapped_type = Dictionary::Entry_iterator;
+	using mapped_type = Core_Dictionary::Entry_iterator;
 	using value_type = std::multimap<key_type, mapped_type>::value_type;
 	using iterator = std::multimap<key_type, mapped_type>::iterator;
 
@@ -33,7 +33,18 @@ class WildcardStringSupport
 	//'?' can substitute no or one character.
 	//'*' and '?' cannot be used at same time.
 
-	enum WildcardType { WildcardPrefix = 0, WildcardSuffix = 1, WildcardInfix = 2, WildcardAffixes = 3, WildcardWord = 4, FixedPosition = 5, Unsupported = 6, NoWildcard = 7 };
+	enum WildcardType 
+	{
+		WildcardPrefix = 0,
+		WildcardSuffix = 1, 
+		WildcardInfix = 2, 
+		WildcardAffixes = 3,
+		WildcardWord = 4, 
+		FixedPosition = 5, 
+		Unsupported = 6, 
+		NoWildcard = 7
+	};
+
 	//WildcardPrefix	*able	|	table, able	|	a map of word entry sorted in an order that the reverse of word is in normal order. Mapped toward dictionary entry_iterator.
 	//WildcardInfix		ab*le	|	abile, able	|	processed as WildcardSuffix, then WildcardPrefix.
 	//WildcardSuffix	able*	|	ablet, able	|	a map of word entry mapped toward dictionary entry_iterator. 
@@ -48,25 +59,23 @@ class WildcardStringSupport
 	//C++ Standard 23.1.2.8:
 	//The insert members shall not affect the validity of iterators and references to the container, and the erase members shall invalidate only iterators and references to the erased elements.
 
-public:
+protected:
 	void initialize_WildcardPrefix();	//For WildcardPrefix 
-	void initialize_WildcardSuffix();	//For WildcardInfix, WildcardSuffix, NoWildcard
+	void initialize_WildcardSuffix();	//For WildcardSuffix
 	void initialize_WildcardWord();		//For WildcardWord
 
-	void initialize_FixedPosition();	//For WildcardAffixes, FixedPosition, currently not implemented
+//	void initialize_FixedPosition();	//For WildcardAffixes, FixedPosition, currently not implemented
 
 private:
-
-	std::shared_ptr<Dictionary::Dictionary_type> dictionary;
+	//shared_ptr to dictionary.
+	std::shared_ptr<Core_Dictionary::Dictionary_type> dictionary;
 
 	static bool reverse_string_less(const std::string &lhs, const std::string &rhs);
-	std::shared_ptr<std::multimap<std::string, Dictionary::Entry_iterator, decltype(WildcardStringSupport::reverse_string_less)*>> WildcardPrefix_MapTo_Dictionary;
+	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardPrefix_MapTo_Dictionary;
 
-	std::shared_ptr<std::multimap<std::string, Dictionary::Entry_iterator>> WildcardSuffix_MapTo_Dictionary;
+	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardSuffix_MapTo_Dictionary;
 
-	std::shared_ptr<std::multimap<std::string, Dictionary::Entry_iterator>> WildcardWord_MapTo_Dictionary;
-
-	std::shared_ptr<std::multimap<std::string, Dictionary::Entry_iterator>> FixedPosition_MapTo_Dictionary;
+	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardWord_MapTo_Dictionary;
 
 	struct WorkingMode
 	{
@@ -78,31 +87,35 @@ private:
 		bool is_FixedPosition_enabled;
 	} working_mode;
 
-private:
+public:
 	void set_working_mode(bool enablePrefix, bool enableSuffix, bool enableInfix, bool enableAffix, bool enableWord, bool enableFixedPosition);
 
 private:
+	void emplace(const Core_Dictionary::Entry_iterator &new_entry);
+	void clear();
+	void reset();
+	void reset(std::shared_ptr<Core_Dictionary::Dictionary_type> _dictionary);
 
 public:
 	WildcardType check_wildcard_type(const std::string &str);
+
+private:
 	QueryResult query_wildcard(const std::string &str);
+	QueryResult query_wildcard_prefix(const std::string &str);
+	QueryResult query_wildcard_suffix(const std::string &str);
+	QueryResult query_wildcard_infix(const std::string &str);
+	QueryResult query_wildcard_word(const std::string &str);
+
 
 public:
 	//Querying a Wildcardstring is time-consuming. User should know what they do.
-	explicit WildcardStringSupport();	//Used to default initialize WildcardStringSupport when a Dictionary object is created.
-	explicit WildcardStringSupport(const Dictionary &dict);
-	~WildcardStringSupport();
+	explicit WildcardStringSupport();	//Used to default initialize WildcardStringSupport when a Core_Dictionary object is created.
+	explicit WildcardStringSupport(const Core_Dictionary &dict);
+	explicit WildcardStringSupport(std::shared_ptr<Core_Dictionary::Dictionary_type> _dictionary);
 
-	//To Do:
-	/*
-	*	bool operator==
-	*	bool operator!=
-	*	bool operator=
-	*
-	*
-	*
-	*
-	*
-	*/
+	explicit WildcardStringSupport(const WildcardStringSupport &origin);
+	WildcardStringSupport(WildcardStringSupport &&origin);
+
+	~WildcardStringSupport();
 };
 

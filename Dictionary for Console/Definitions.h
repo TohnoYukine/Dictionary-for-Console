@@ -11,41 +11,49 @@
 
 class Definitions
 {
-	using Attribute = std::string;
-	using Description = std::string;
-	using AttributeList = std::vector<Attribute>;
+	friend std::ostream &operator<<(std::ostream &os, const Definitions &definition);
 
-	using key_type = Attribute;
-	using mapped_type = Description;
-	using value_type = std::pair<Attribute, Description>;
-	using iterator = std::multimap<Attribute, Description>::iterator;
-	using const_iterator = std::multimap<Attribute, Description>::const_iterator;
+	using Attribute_type = std::string;
+	using Description_type = std::string;
+
+	using key_type = Attribute_type;
+	using mapped_type = Description_type;
+	using value_type = std::pair<Attribute_type, Description_type>;
+	using container_type = std::vector<value_type>;
+	using iterator = container_type::iterator;
+	using const_iterator = container_type::const_iterator;
 
 public:
-	static Attribute DefaultAttribute;
-	static Description DefaultDescription;
+	static Attribute_type DefaultAttribute;
+	static Description_type DefaultDescription;
 
 private:
-	AttributeList attributes;
-	std::multimap<Attribute, Description> entry_details;
+	container_type entry_details;	//Attribute is used to mark the Description, default constructed is DefaultAttribute.
 
 public:
 	//For entry with no definitions
 	Definitions();
 	//Used for simple definitions
-	Definitions(Description _description);
+	Definitions(Description_type _description);
+	Definitions(Description_type &&_description) noexcept;
 	//Given AttributeList, initialize with a series of descriptions. 
-	//Descriptions must match AttributeList in number!
-	explicit Definitions(AttributeList _attibutes, std::vector<Description> _descriptions);
-	explicit Definitions(AttributeList _attibutes, std::initializer_list<Description> _descriptions);
 	explicit Definitions(std::initializer_list<value_type> formatted_pairs);
-	//Initialize with a series of Attribute-Description pair. Delimiter must be specified.
-	explicit Definitions(char delim, std::initializer_list<Attribute> _attibutes);
+
+	//For temporary use
+	explicit Definitions(const std::vector<value_type> &formatted_pairs);
+	explicit Definitions(std::vector<value_type> &&formatted_pairs) noexcept;
+
+	explicit Definitions(const std::vector<Description_type> &_descriptions);
+
+	Definitions(const Definitions &origin);
+	Definitions(Definitions &&origin) noexcept;
 
 	~Definitions();
 
 	iterator begin();
 	iterator end();
+	const_iterator begin() const;
+	const_iterator end() const;
 	const_iterator cbegin() const;
 	const_iterator cend() const;
 
@@ -53,3 +61,4 @@ public:
 	
 };
 
+std::ostream &operator<<(std::ostream &os, const Definitions &definition);

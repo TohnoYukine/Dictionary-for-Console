@@ -6,6 +6,8 @@
 
 #include <map>
 #include <vector>
+#include <deque>
+#include <list>
 #include <iterator>
 #include <string>
 #include <utility>
@@ -15,21 +17,26 @@
 #include <set>
 #include <cctype>
 
-#include "Dictionary.h"
+#include "Core_Dictionary.h"
 
-class Dictionary;
+class Core_Dictionary;
 class QueryResult
 {
+	friend std::ostream &operator<<(std::ostream &os, QueryResult &results);
+	friend QueryResult operator|(const QueryResult &lhs, const QueryResult &rhs);
+	friend QueryResult operator&(const QueryResult &lhs, const QueryResult &rhs);
+
+
 public:
-	using Dictionary_type = Dictionary::Dictionary_type;
-	using result_type = std::vector<Dictionary::Entry_iterator>;
+	using Dictionary_type = Core_Dictionary::Dictionary_type;
+	using result_type = std::deque<Core_Dictionary::Entry_iterator>;
 	using iterator = result_type::iterator;
 	using const_iterator = result_type::const_iterator;		//It needs further confirmation whether const_iterator can modify dictionary.
-	using size_type = Dictionary_type::size_type;
-	using value_type = Dictionary::Entry_iterator;
+	using size_type = result_type::size_type;
+	using value_type = Core_Dictionary::Entry_iterator;
 
 private:
-	std::shared_ptr<Dictionary_type> dictionary;	//Shares data with Dictionary. dictionary will be accessible till all reference destroyed.
+	std::shared_ptr<Dictionary_type> dictionary;	//Shares data with Core_Dictionary. dictionary will be accessible till all reference destroyed.
 	std::shared_ptr<result_type> result;			//Why using vector? multimap<T>::iterator is bidirectional iterator and has no operator<
 	std::string word;						
 
@@ -46,19 +53,21 @@ public:
 	const_iterator cend() const;
 
 	size_type size() const;
+	bool empty() const;
 	iterator erase(iterator &iter);					//erase from QueryResult, but not from dictionary.
 	iterator erase(size_type pos);
+	iterator erase(iterator &first, iterator &last);
 	void clear();
 
 	value_type &operator[](size_type pos);
-	value_type &operator[](size_type pos) const;
-	value_type &operator*();
-	value_type &operator*() const;
+	value_type operator[](size_type pos) const;
+
+	std::string queried_word() const;
 	
-	//Dictionary::Entry_iterator operator++();
-	//Elements in result are not guaranteed to be continuous in dictionary, which should not depend on when query.
+	//Elements in result are not guaranteed to be continuous in dictionary, which should not be depended on when query.
 
 private:
+	Core_Dictionary::Entry_iterator pop_front();
 
 public:
 	void print() const;
@@ -67,7 +76,12 @@ public:
 	void print_raw() const;			
 	std::string get_raw();			//Only the first result is returned.
 
-	//Empty result, but not affect dictionary
-	bool empty();
+	QueryResult &operator|=(const QueryResult &rhs);
+	QueryResult &operator&=(const QueryResult &rhs);
+
 };
 
+//When treated as stream, only 
+std::ostream &operator<<(std::ostream &os, QueryResult &results);
+QueryResult operator|(const QueryResult &lhs, const QueryResult &rhs);
+QueryResult operator&(const QueryResult &lhs, const QueryResult &rhs);
