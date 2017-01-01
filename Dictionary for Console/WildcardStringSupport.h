@@ -71,7 +71,7 @@ private:
 	//shared_ptr to dictionary.
 	std::shared_ptr<Core_Dictionary::Dictionary_type> dictionary;
 
-	static bool reverse_string_less(const std::string &lhs, const std::string &rhs);
+	inline static bool reverse_string_less(const std::string &lhs, const std::string &rhs);
 	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>> WildcardPrefix_MapTo_Dictionary;
 
 	inline static bool string_less(const std::string &lhs, const std::string &rhs);

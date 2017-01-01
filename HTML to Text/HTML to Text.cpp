@@ -9,70 +9,45 @@
 #include <cctype>
 #include <msxml.h>
 
-using std::wifstream;
-using std::wofstream;
-using std::wistringstream;
-using std::wostringstream;
-using std::wcin;
-using std::wcout;
+using std::ifstream;
+using std::ofstream;
+using std::istringstream;
+using std::ostringstream;
+using std::cin;
+using std::cout;
 using std::endl;
-using std::wstring;
 using std::string;
 
 const string sample_01(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary.txt)");
 const string sample_02(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary - Customized.txt)");
 
-
-
-/*
-int main()
+string html_to_string(const string &s)
 {
-	wifstream wifile(sample_01, wifstream::in);
-	wofstream wofile(sample_02, wofstream::trunc);
-	wstring wline;
-	int line_cnt = 0;
-	while (!wifile.eof())
+	string ret;
+	string::size_type pos1 = 0;
+	string::size_type pos2 = 0;
+	while (true)
 	{
-		std::getline(wifile, wline);
-		wistringstream itemp(wline);
-		wostringstream otemp;
-		wchar_t c;
-		bool delim_switch = false;
-		while (!itemp.eof())
-		{
-			if (!itemp.get(c))
-				break;
-			if (c != L'<')
-			{
-				otemp << c;
-				delim_switch = true;
-			}
-			else
-			{
-				while (true)
-				{
-					itemp.get(c);
-					if (c == L'>')
-					{
-						if (delim_switch)
-							otemp << L'|';
-						delim_switch = false;
-						while (iswspace(itemp.peek()))
-							itemp.get();
-						break;
-					}
-					else
-						continue;
-				}
-
-			}
-		}
-		wofile << otemp.str() << endl;
-		wcout << line_cnt++ << endl;
+		pos2 = s.find(u8'<', pos1);
+		ret += s.substr(pos1, pos2 - pos1);
+		if (s.find(u8"<br />", pos2) == pos2 || s.find(u8"<br/>", pos2) == pos2)
+			ret += u8'\n';
+		pos1 = s.find(u8'>', pos2);
+		if (pos1 != string::npos)
+			++pos1;
+		else
+			break;
 	}
-	wifile.close();
-	wofile.close();
-    return 0;
+	return ret;
 }
 
-*/
+int main()
+{
+	string s;
+	while (cin)
+	{
+		std::getline(cin, s);
+		cout << html_to_string(s);
+	}
+	return 0;
+}

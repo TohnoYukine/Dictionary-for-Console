@@ -34,9 +34,9 @@ private:
 public:
 	Generic_Dictionary();
 
-	explicit Generic_Dictionary(std::istream &is, Category_type _category = default_category);
-	explicit Generic_Dictionary(std::istream &is, char delim, Category_type _category = default_category);
-	explicit Generic_Dictionary(std::istream &is, char delim1, char delim2, Category_type _category = default_category);
+	explicit Generic_Dictionary(std::istream &is);
+	explicit Generic_Dictionary(std::istream &is, char delim);
+	explicit Generic_Dictionary(std::istream &is, char delim1, char delim2);
 
 	explicit Generic_Dictionary(std::initializer_list<Entry_type> entries);
 

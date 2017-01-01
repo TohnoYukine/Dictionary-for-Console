@@ -28,6 +28,7 @@ class QueryResult
 
 
 public:
+	using Entry_type = Core_Dictionary::Entry_type;
 	using Dictionary_type = Core_Dictionary::Dictionary_type;
 	using result_type = std::deque<Core_Dictionary::Entry_iterator>;
 	using iterator = result_type::iterator;
@@ -59,14 +60,14 @@ public:
 	iterator erase(iterator &first, iterator &last);
 	void clear();
 
-	Entry operator[](size_type pos) const;
+	Entry_type operator[](size_type pos) const;
 
 	std::string queried_word() const;
 	
 	//Elements in result are not guaranteed to be continuous in dictionary, which should not be depended on when query.
 
-private:
 	Core_Dictionary::Entry_iterator pop_front();
+private:
 
 public:
 	void print() const;

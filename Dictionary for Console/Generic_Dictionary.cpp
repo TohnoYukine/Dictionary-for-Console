@@ -2,15 +2,15 @@
 #include "Generic_Dictionary.h"
 #include "QueryResult.h"
 
-Generic_Dictionary::Generic_Dictionary(std::istream & is, Category_type _category) :
-	Generic_Dictionary(is, u8'\t', u8'\n', _category) {}
+Generic_Dictionary::Generic_Dictionary(std::istream & is) :
+	Generic_Dictionary(is, u8'\t', u8'\n') {}
 
 
-Generic_Dictionary::Generic_Dictionary(std::istream & is, char delim, Category_type _category) :
-	Generic_Dictionary(is, u8'\t', delim, _category) {}
+Generic_Dictionary::Generic_Dictionary(std::istream & is, char delim) :
+	Generic_Dictionary(is, u8'\t', delim) {}
 
-Generic_Dictionary::Generic_Dictionary(std::istream & is, char delim1, char delim2, Category_type _category) :
-	Core_Dictionary(is, _category),
+Generic_Dictionary::Generic_Dictionary(std::istream & is, char delim1, char delim2) :
+	Core_Dictionary(is),
 	wildcard_string_support(dictionary),
 	regex_support(dictionary) {}
 

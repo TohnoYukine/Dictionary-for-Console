@@ -15,25 +15,97 @@
 #include <set>
 #include <cctype>
 
+#define LOW_MEMORY_REQUIREMENT
+
+#ifdef LOW_MEMORY_REQUIREMENT
+#undef HIGH_PERFORMANCE
+#endif // LOW_MEMORY_REQUIREMENT
+
+
 #include "Definitions.h"
+#include "DefinitionPos.h"
 
 class QueryResult;			//Allows user to query as well as add entries
-class Entry;
-class Entry_iterator;		//Some inner data leaks from std::multimap<EntryWord_type, Definition_type>::iterator, further encapsulation needed.
+
+class Entry : public std::pair<std::string, Definitions>
+{
+private:
+	using std::pair<std::string, Definitions>::first;
+	using std::pair<std::string, Definitions>::second;
+
+public:
+	using EntryWord_type = std::string;
+	using Definition_type = Definitions;
+
+	using std::pair<std::string, Definitions>::pair;
+	inline explicit Entry(const std::string &str, char delim);
+	inline explicit Entry(std::istream &is, char delim1, char delim2);
+	inline bool valid() const;
+
+	inline std::string &entry_word() { return first; }
+	inline Definitions &definitions() { return second; }
+	inline const std::string &entry_word() const { return first; }
+	inline const Definitions &definitions() const { return second; }
+};
+
+//Used with DefinitionPos
+class Entry2 : public std::pair<std::string, DefinitionPos>
+{
+private:
+	using std::pair<std::string, DefinitionPos>::first;
+	using std::pair<std::string, DefinitionPos>::second;
+
+public:
+	using EntryWord_type = std::string;
+	using Definition_type = DefinitionPos;
+
+	using std::pair<std::string, DefinitionPos>::pair;
+	inline explicit Entry2(const std::string &_entry_word, std::streampos def_pos_beg, std::streampos def_pos_end);
+	inline explicit Entry2(std::istream &is, char delim1, char delim2);
+	inline explicit Entry2(const std::string &str, char delim);	//Used to keep the same style as Entry, does not work!!
+
+	inline void set_dictionary_path(std::shared_ptr<std::string> _dictionary_path);	//Set _dictionary_path for DefinitionPos to visit the file.
+
+	inline std::string &entry_word() { return first; }
+	inline DefinitionPos &definitions() { return second; }
+	inline const std::string &entry_word() const { return first; }
+	inline const DefinitionPos &definitions() const { return second; }
+};
+
+//Data leaks from iterators. Need some further encapsulation.
+class Entry_iterator : public std::multimap<Entry::EntryWord_type, Entry::Definition_type>::iterator
+{
+public:
+	inline Entry operator*() const { return Entry(std::multimap<Entry::EntryWord_type, Entry::Definition_type>::iterator::operator*()); }
+	inline Entry *operator->() const { return &operator*(); }
+};
+
+class Entry2_iterator : public std::multimap<Entry2::EntryWord_type, Entry2::Definition_type>::iterator
+{
+public:
+	inline Entry2 operator*() const { return Entry2(std::multimap<Entry2::EntryWord_type, Entry2::Definition_type>::iterator::operator*()); }
+	inline Entry2 *operator->() const { return &operator*(); }
+};
+
+
 class Core_Dictionary
 {
 public:
-	using Category_type = std::string;
-	using EntryWord_type = std::string;
-	using Definition_type = Definitions;
-//	using Entry_type = std::pair<EntryWord_type, Definition_type>;
+#ifdef HIGH_PERFORMANCE
 	using Entry_type = Entry;
+#endif // HIGH_PERFORMANCE
+#ifdef LOW_MEMORY_REQUIREMENT
+	using Entry_type = Entry2;
+#endif // LOW_MEMORY_REQUIREMENT
+
+	using EntryWord_type = Entry_type::EntryWord_type;
+	using Definition_type = Entry_type::Definition_type;
+
 	using Dictionary_type = std::multimap<EntryWord_type, Definition_type>;
 	using Entry_iterator = std::multimap<EntryWord_type, Definition_type>::iterator;
-//	using Entry_iterator = Entry_iterator;
+
 	using const_Entry_iterator = std::multimap<EntryWord_type, Definition_type>::const_iterator;
 
-	static Category_type default_category;
 	static EntryWord_type InvalidWord;
 	static Definition_type InvalidDefinition;
 	static Entry_type InvalidEntry;
@@ -45,13 +117,11 @@ private:
 
 //Data members
 protected:
-	Category_type category;								//User may use different dictionaries. Used to check whether Dictionary can be combined.
 	std::shared_ptr<Dictionary_type> dictionary;
 
 private:
 //Assisting member functions used to do actual work.
 	inline void initialize_dictionary(std::istream &is, char delim1 = u8'\t', char delim2 = u8'\n');	//delim2 separate entries, delim1 separate entry word and definition
-	inline Entry_type string_to_entry(std::string s, char delim);
 
 public:
 //Copy Control
@@ -59,9 +129,9 @@ public:
 
 	//delim separates entries
 	//delim2 separate entries, delim1 separate entry word and definition
-	explicit Core_Dictionary(std::istream &is, Category_type _category = default_category);
-	explicit Core_Dictionary(std::istream &is, char delim, Category_type _category = default_category);
-	explicit Core_Dictionary(std::istream &is, char delim1, char delim2, Category_type _category = default_category);
+	explicit Core_Dictionary(std::istream &is);
+	explicit Core_Dictionary(std::istream &is, char delim);
+	explicit Core_Dictionary(std::istream &is, char delim1, char delim2);
 
 	explicit Core_Dictionary(std::initializer_list<Entry_type> entries);
 
@@ -82,7 +152,7 @@ public:
 	//DataMode defaultly set as DictionaryOnly. When adding a backup at temp_entries, specify RawAndDictionary.
 	virtual Entry_iterator emplace(const std::string &str, char delim);
 	virtual Entry_iterator emplace(const EntryWord_type &_entryword, const Definition_type &_definitions);
-	virtual Entry_iterator insert(const Entry_type &new_entry);
+	virtual Entry_iterator insert(const Entry_type &new_entry);	//insert checks for empty entry_word and discard it automatically.
 
 	virtual void clear();
 
@@ -112,12 +182,14 @@ public:
 
 
 public:
-	inline void set_category(Category_type _category);
-	inline Category_type get_category() const;
-
 	bool query_print(const EntryWord_type &word) const;				//Marked as deprecated, return false if no entry found.
 
 	virtual QueryResult query(const EntryWord_type &word);
+
+#ifdef LOW_MEMORY_REQUIREMENT
+	void set_dictionary_path(std::shared_ptr<std::string> _dictionary_path);
+#endif // LOW_MEMORY_REQUIREMENT
+
 };
 
 std::ostream& operator<<(std::ostream &os, const Core_Dictionary::Entry_type &entry);
@@ -125,24 +197,5 @@ std::ostream& operator<<(std::ostream &os, const Core_Dictionary::Entry_type &en
 bool operator<(Core_Dictionary::Entry_iterator lhs, Core_Dictionary::Entry_iterator rhs);
 bool operator<(Core_Dictionary::const_Entry_iterator lhs, Core_Dictionary::const_Entry_iterator rhs);
 
-class Entry : public std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>
-{
-private:
-	using std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::first;
-	using std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::second;
 
-public:
-	using std::pair<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::pair;
 
-	inline Core_Dictionary::EntryWord_type &entry_word() { return first; }
-	inline Core_Dictionary::Definition_type &definitions() { return second; }
-	inline const Core_Dictionary::EntryWord_type &entry_word() const { return first; }
-	inline const Core_Dictionary::Definition_type &definitions() const { return second; }
-};
-
-class Entry_iterator : public std::multimap<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::iterator
-{
-public:
-	inline Entry operator*() const { return Entry(std::multimap<Core_Dictionary::EntryWord_type, Core_Dictionary::Definition_type>::iterator::operator*()); }
-	inline Entry *operator->() const { return &operator*(); }
-};

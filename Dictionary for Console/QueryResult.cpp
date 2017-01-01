@@ -8,7 +8,7 @@ QueryResult::QueryResult(std::string _word,
 	word(_word), dictionary(_ptr_dictionary), result(_result) {}
 
 QueryResult::QueryResult(const QueryResult & origin) :
-	word(origin.word), dictionary(origin.dictionary), result(origin.result) {}
+	word(origin.word), dictionary(origin.dictionary), result(new result_type(*origin.result)) {}
 
 QueryResult::~QueryResult()
 {
@@ -34,11 +34,11 @@ QueryResult::const_iterator QueryResult::cend() const
 	return result->cend();
 }
 
-Entry QueryResult::operator[](size_type pos) const
+QueryResult::Entry_type QueryResult::operator[](size_type pos) const
 {
 	if (pos >= result->size())
 		throw std::out_of_range("Subscript out of range!");
-	return Entry(*result->operator[](pos));
+	return Entry_type(*result->operator[](pos));
 }
 
 QueryResult::size_type QueryResult::size() const
@@ -79,8 +79,7 @@ void QueryResult::print() const
 	for (auto &iter : *result)
 	{
 		std::cout << iter->first << std::endl;
-		for (auto &details : iter->second)
-			std::cout << details.first << u8":\t" << details.second << std::endl;
+		iter->second.print();
 	}
 }
 
@@ -93,17 +92,12 @@ void QueryResult::print_raw() const
 
 std::string QueryResult::get_raw()
 {
-	std::ostringstream ostrm;
 	std::string ret;
 	for (auto entry_iter = cbegin(); entry_iter != cend(); ++entry_iter)
 	{
 		ret += (*entry_iter)->first;
 		ret += u8'\t';
-		for (const auto &details : (*entry_iter)->second)
-		{
-			ret += details.second;
-			ret += u8'\t';
-		}
+		ret += (*entry_iter)->second.get_raw();
 		ret += u8'\n';
 	}
 	return ret;

@@ -19,7 +19,7 @@
 #include <codecvt>
 #include <locale>
 #include <Windows.h>
-#include <MsXml6.h>
+#include <boost\program_options.hpp>
 
 #include "Core_Dictionary.h"
 #include "Generic_Dictionary.h"
@@ -39,26 +39,62 @@ using std::endl;
 using std::string;
 using std::vector;
 
+namespace program_options = boost::program_options;
+
 const string sample_01(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Cambridge Advanced Learner's Dictionary.txt)");
 const string sample_02(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Longman Dictionary of Contemporary English.txt)");
 const string sample_03(R"(C:\Users\Administrator\Documents\Visual Studio 2015\Projects\Personal Use\Dictionary for Console\Dictionaries\Oxford Advanced Learner's Dictionary.txt)");
+const string sample_04(R"(Oxford Advanced Learner's Dictionary.txt)");
 
 Definitions SimpleXmlParser(const string &raw);
 Core_Dictionary::Entry_type LingoesParser(istream &raw);
 Core_Dictionary::Entry_type LingoesOxfordParser(istream &raw);
+string html_to_string(const string &s);
+Generic_Dictionary load_dictionary(const string &dictionary_path);
 
-//HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-
-int main()
+int main(int argc, char **argv)
 {
 	system("chcp 65001");
+
+	program_options::options_description desc("Allowed options");
+	desc.add_options()
+		("help", "produce help message")
+		("import", program_options::value<string>(), "import dictionary file");
+
+	program_options::variables_map vm;
+	program_options::store(program_options::parse_command_line(argc, argv, desc), vm);
+	program_options::notify(vm);
+
+	if (vm.count("help")) 
+	{
+		cout << desc << "\n";
+		return 1;
+	}
+
+	if (vm.count("import") && !vm["import"].empty())
+	{
+		cout << "Import dictionary: "
+			<< vm["import"].as<string>() << ".\n";
+	}
+	else {
+		cout << "No dictionary loaded! Exiting";
+		return 1;
+	}
 
 	Win32ConsoleColor::Initialize_Win32ConsoleColor();
 
 	Generic_Dictionary my_dictionary;
-	ifstream ifile(sample_03);
-	while (!ifile.eof())
-		my_dictionary.insert(LingoesOxfordParser(ifile));
+
+	try
+	{
+		my_dictionary = load_dictionary(vm["import"].as<string>());
+	}
+	catch (std::runtime_error loading_failure)
+	{
+		std::cerr << loading_failure.what() << "\n"
+			<< vm["import"].as<string>();
+		return -1;
+	}
 
 	cout << u8"Dictionary initialized!" << endl;
 	string word2;
@@ -68,29 +104,43 @@ int main()
 		if (!word2.empty())
 		{
 			try {
-//				SetConsoleTextAttribute(console, 13);
 				QueryResult result(my_dictionary.query(word2));
 				if (result.size() > 20)
 				{
 					cout << Win32ConsoleColor(12) << result.size() << u8" entries found." << endl;
 					cout << Win32ConsoleColor(12) << u8"Too many results, please query a more detailed wildcard string or word" << endl;
+					cout << endl;
 				}
 				else if (result.size() == 1)
 				{
 					cout << Win32ConsoleColor(9) << result.size() << u8" entry found." << endl;
-					cout << Win32ConsoleColor(13);
-					QueryResult raw(result);
-					while (!raw.empty())
-						cout << Win32ConsoleColor(13) << raw << endl;
+					cout << Win32ConsoleColor(13) << result[0].entry_word() << u8'\n'
+						<< html_to_string(result[0].definitions().get_raw()) << endl;
 				}
 				else if (result.size() != 0)
 				{
 					cout << Win32ConsoleColor(9) << result.size() << u8" entries found." << endl;
 					for (int i = 0; i != result.size(); ++i)
-						//using Entry_type = std::pair<EntryWord_type, Definition_type>
-						//this somehow leaks out some data from class.
 						cout << Win32ConsoleColor(14) << i << u8"." << result[i].entry_word() << endl;
 					cout << endl;
+					cout << "You may specify a word by its index. Enter a integer between 0 and 19 to show details." << endl;
+					while (true)
+					{
+						size_t index;
+						if (!(cin >> index))
+						{
+							cin.clear();
+							cout << "Leaving current query. You can query new words.\n" << endl;
+							break;
+						}
+						if (index >= result.size() || index < 0) 
+						{
+							cout << "Leaving current query. You can query new words.\n" << endl;
+							break;
+						}	
+						cout << Win32ConsoleColor(13) << result[index].entry_word() << u8'\n'
+							<< html_to_string(result[index].definitions().get_raw()) << endl;
+					}
 				}
 				else
 				{
@@ -102,93 +152,6 @@ int main()
 			{
 				std::cerr << query_failure.what() << endl;
 			}
-
 		}
 	}
-}
-
-
-Definitions SimpleXmlParser(const string & raw)
-{
-	istringstream line(raw);
-	string str;
-	while (!line.eof())
-	{
-		if (line.peek() == u8'<')
-		{
-			while (line.peek() != u8'>')
-				line.get();
-			line.get();
-			continue;
-		}
-		if (isspace(line.peek()))
-		{
-			line.get();
-			continue;
-		}
-		string temp_str;
-		std::getline(line, temp_str, u8'<');
-		str += temp_str;
-		str += u8' ';
-		if (!line.eof())
-			line.unget();
-	}
-	return Definitions(str);
-}
-
-Core_Dictionary::Entry_type LingoesParser(istream & raw)
-{
-	string word;
-//	string def;
-	if (!raw.eof())
-		std::getline(raw, word, u8'\t');
-	string temp;
-	if (!raw.eof())
-		std::getline(raw, temp);
-	string def;
-	while (temp.find(u8'<') != string::npos)
-	{
-		def += temp.substr(0, temp.find(u8'<'));
-		if (temp.find(u8'>') != string::npos)
-		{
-			temp = temp.substr(temp.find(u8'>') + 1);
-		}
-	}
-	def += temp;
-	return Core_Dictionary::Entry_type(word, def);
-}
-
-Core_Dictionary::Entry_type LingoesOxfordParser(istream & raw)
-{
-	string word;
-	if (!raw.eof())
-		std::getline(raw, word, u8'\t');
-	string temp;
-	if (!raw.eof())
-		std::getline(raw, temp);
-	vector<string> lines;
-	string line;
-	while (!temp.empty() && temp.find(u8'<') != string::npos)
-	{
-		line += temp.substr(0, temp.find(u8'<'));
-		temp = temp.substr(temp.find(u8'<'));
-		if (temp.find(u8"<br />") == 0 || temp.find(u8"<br/>") == 0)
-		{
-			if (!line.empty())
-			{
-				line = line.substr(line.find_first_not_of(u8' '));
-				if (!line.empty())
-					lines.push_back(line);
-			}
-			line.clear();
-		}
-		temp = temp.substr(temp.find(u8'>') + 1);
-	}
-	if (!line.empty())
-	{
-		line = line.substr(line.find_first_not_of(u8' '));
-		if (!line.empty())
-			lines.push_back(line);
-	}
-	return Core_Dictionary::Entry_type(word, Definitions(lines));
 }

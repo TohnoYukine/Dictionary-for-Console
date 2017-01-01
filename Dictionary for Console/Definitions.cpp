@@ -6,7 +6,7 @@ Definitions::Description_type Definitions::DefaultDescription;
 
 Definitions::Definitions() {}
 
-Definitions::Definitions(Description_type _description) :
+Definitions::Definitions(const Description_type &_description) :
 	Definitions({ std::make_pair(DefaultAttribute, _description) }) {}
 
 Definitions::Definitions(Description_type && _description) noexcept :
@@ -18,6 +18,41 @@ Definitions::Definitions(std::initializer_list<value_type> formatted_pairs)
 		entry_details.push_back(formatted_pair);
 }
 
+Definitions::Definitions(const std::string & str, char delim)
+{
+	std::string::size_type pos1 = str.find_first_not_of(u8" \t\n");
+	std::string::size_type pos2 = str.find(delim, pos1);
+	while (pos1 != std::string::npos)
+	{
+		if (pos2 == pos1)
+			continue;
+		entry_details.emplace_back(DefaultAttribute, str.substr(pos1, pos2));
+		if (pos2 == std::string::npos || pos2 == str.size() - 1)
+			break;
+		pos1 = str.find_first_not_of(u8" \t\n", pos2 + 1);
+		pos2 = str.find(delim, pos1);
+	}
+}
+
+Definitions::Definitions(std::istream & is, char delim1, char delim2)
+{
+	std::string line;
+	std::string str;
+	std::getline(is, str, delim2);
+
+	std::string::size_type pos1 = str.find_first_not_of(u8" \t\n");
+	std::string::size_type pos2 = str.find(delim1, pos1);
+	while (pos1 != std::string::npos)
+	{
+		if (pos2 == pos1)
+			continue;
+		entry_details.emplace_back(DefaultAttribute, str.substr(pos1, pos2));
+		if (pos2 == std::string::npos || pos2 == str.size() - 1)
+			break;
+		pos1 = str.find_first_not_of(u8" \t\n", pos2 + 1);
+		pos2 = str.find(delim1, pos1);
+	}
+}
 
 Definitions::Definitions(const std::vector<value_type> &formatted_pairs)
 {
@@ -43,6 +78,21 @@ Definitions::Definitions(const Definitions & origin)
 
 Definitions::Definitions(Definitions && origin) noexcept :
 	entry_details(std::move(origin.entry_details)) {}
+
+Definitions & Definitions::operator=(const Definitions & origin)
+{
+	entry_details.clear();
+	for (const auto &formatted_pair : origin.entry_details)
+		entry_details.push_back(formatted_pair);
+	return *this;
+}
+
+Definitions & Definitions::operator=(Definitions && origin)
+{
+	entry_details.clear();
+	entry_details = std::move(origin.entry_details);
+	return *this;
+}
 
 Definitions::~Definitions() {}
 
@@ -74,6 +124,24 @@ Definitions::const_iterator Definitions::cbegin() const
 Definitions::const_iterator Definitions::cend() const
 {
 	return entry_details.cend();
+}
+
+std::string Definitions::get_raw() const
+{
+	std::string ret;
+	for (const auto &details : *this)
+	{
+		ret += details.second;
+		ret += u8'\t';
+	}
+	ret.pop_back();
+	return ret;
+}
+
+void Definitions::print() const
+{
+	for (const auto &details : *this)
+		std::cout << details.second << std::endl;
 }
 
 std::ostream & operator<<(std::ostream & os, const Definitions & definition)

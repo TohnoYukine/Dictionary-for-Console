@@ -2,7 +2,6 @@
 #include "Core_Dictionary.h"
 #include "QueryResult.h"
 
-std::string Core_Dictionary::default_category(u8"Default");
 Core_Dictionary::EntryWord_type Core_Dictionary::InvalidWord;
 Core_Dictionary::Definition_type Core_Dictionary::InvalidDefinition;
 Core_Dictionary::Entry_type Core_Dictionary::InvalidEntry(InvalidWord, InvalidDefinition);
@@ -11,91 +10,41 @@ inline void Core_Dictionary::initialize_dictionary(std::istream & is, char delim
 {
 	std::string line;
 	size_t line_cnt = 0;
-	while (iswspace(is.peek())) is.get();
 	while (!is.eof())
 	{
-		std::getline(is, line, delim2);
 		++line_cnt;
-		dictionary->insert(string_to_entry(line, delim1));
-		while (iswspace(is.peek()) && !is.eof()) is.get();
+		dictionary->insert(Entry_type(is, delim1, delim2));
 	}
-}
-
-inline Core_Dictionary::Entry_type Core_Dictionary::string_to_entry(std::string s, char delim)
-{
-	std::istringstream istrm(s);
-	EntryWord_type newWord;
-	std::string temp;
-	while (iswspace(istrm.peek())) istrm.get();
-	if (!istrm.eof())
-	{
-		try
-		{
-			std::getline(istrm, newWord, delim);
-			newWord = newWord.substr(0, newWord.find_last_not_of(u8" \t\n") + 1);
-			if (newWord.empty())
-				throw std::runtime_error("No Word!");
-		}
-		catch (std::runtime_error input_fail)
-		{
-			std::cerr << input_fail.what() << std::endl;
-			return InvalidEntry;
-		}
-
-		while (iswspace(istrm.peek())) istrm.get();
-
-		try
-		{
-			while (iswspace(istrm.peek()))	istrm.get();
-			std::getline(istrm, temp);
-			if (temp.empty())
-				throw std::runtime_error("No Definition!");
-		}
-		catch (std::runtime_error input_fail)
-		{
-			std::cerr << newWord << u8":\t" << input_fail.what() << std::endl;
-			return InvalidEntry;
-		}
-	}
-	Definition_type newDef(temp);
-	return Entry_type(newWord, newDef);
 }
 
 Core_Dictionary::Core_Dictionary() :
-	dictionary(new Dictionary_type()),
-	category(default_category)
-{
-}
+	dictionary(new Dictionary_type()) {}
 
-Core_Dictionary::Core_Dictionary(std::istream &is, Category_type _category) :
-	Core_Dictionary(is, u8'\t', u8'\n', _category) {}
+Core_Dictionary::Core_Dictionary(std::istream &is) :
+	Core_Dictionary(is, u8'\t', u8'\n') {}
 
-Core_Dictionary::Core_Dictionary(std::istream & is, char delim, Category_type _category) :
-	Core_Dictionary(is, u8'\t', delim, _category) {}
+Core_Dictionary::Core_Dictionary(std::istream & is, char delim) :
+	Core_Dictionary(is, u8'\t', delim) {}
 
-Core_Dictionary::Core_Dictionary(std::istream & is, char delim1, char delim2, Category_type _category) :
-	dictionary(new Dictionary_type()),
-	category(_category)
+Core_Dictionary::Core_Dictionary(std::istream & is, char delim1, char delim2) :
+	dictionary(new Dictionary_type())
 {
 	initialize_dictionary(is, delim1, delim2);
 }
 
 Core_Dictionary::Core_Dictionary(std::initializer_list<Entry_type> entries) :
-	dictionary(new Dictionary_type()),
-	category(default_category)
+	dictionary(new Dictionary_type())
 {
 	for (auto &entry : entries)
 		dictionary->insert(entry);
 }
 
 Core_Dictionary::Core_Dictionary(const Core_Dictionary &origin) : 
-	dictionary(origin.dictionary),
-	category(origin.category)
+	dictionary(origin.dictionary)
 {
 }
 
 Core_Dictionary::Core_Dictionary(Core_Dictionary && origin) :
-	category(std::move(origin.category)),
 	dictionary(origin.dictionary)
 {
 	origin.dictionary = nullptr;
@@ -103,14 +52,12 @@ Core_Dictionary::Core_Dictionary(Core_Dictionary && origin) :
 
 Core_Dictionary & Core_Dictionary::operator=(const Core_Dictionary & rhs)
 {
-	category = rhs.category;
 	dictionary = rhs.dictionary;
 	return *this;
 }
 
 Core_Dictionary & Core_Dictionary::operator=(Core_Dictionary && rhs)
 {
-	category = std::move(rhs.category);
 	dictionary = rhs.dictionary;
 	rhs.dictionary = nullptr;
 	return *this;
@@ -119,7 +66,6 @@ Core_Dictionary & Core_Dictionary::operator=(Core_Dictionary && rhs)
 Core_Dictionary & Core_Dictionary::swap(Core_Dictionary &rhs)
 {
 	dictionary.swap(rhs.dictionary);
-	category.swap(rhs.category);
 	return *this;
 }
 
@@ -129,7 +75,7 @@ Core_Dictionary::~Core_Dictionary()
 
 Core_Dictionary::Entry_iterator Core_Dictionary::emplace(const std::string &str, char delim)
 {
-	return insert(string_to_entry(str, delim));
+	return insert(Entry_type(str, delim));
 }
 
 Core_Dictionary::Entry_iterator Core_Dictionary::emplace(const EntryWord_type & _entryword, const Definition_type & _definitions)
@@ -139,13 +85,15 @@ Core_Dictionary::Entry_iterator Core_Dictionary::emplace(const EntryWord_type & 
 
 Core_Dictionary::Entry_iterator Core_Dictionary::insert(const Entry_type & new_entry)
 {
-	return dictionary->insert(new_entry);
+	if (!new_entry.entry_word().empty())
+		return dictionary->insert(new_entry);
+	else
+		return dictionary->begin();
 }
 
 void Core_Dictionary::clear()
 {
 	dictionary = nullptr;
-	category.clear();
 }
 
 std::shared_ptr<Core_Dictionary::Dictionary_type> Core_Dictionary::erase(QueryResult & words)
@@ -225,16 +173,6 @@ Core_Dictionary::const_Entry_iterator Core_Dictionary::cend() const
 	return dictionary->cend();
 }
 
-inline void Core_Dictionary::set_category(Category_type _category)
-{
-	category = _category;
-}
-
-inline Core_Dictionary::Category_type Core_Dictionary::get_category() const
-{
-	return category;
-}
-
 bool Core_Dictionary::query_print(const EntryWord_type &word) const
 {
 	size_t entries = 0;
@@ -257,6 +195,15 @@ QueryResult Core_Dictionary::query(const EntryWord_type &word)
 	return QueryResult(word, dictionary, result);
 }
 
+#ifdef LOW_MEMORY_REQUIREMENT
+void Core_Dictionary::set_dictionary_path(std::shared_ptr<std::string> _dictionary_path)
+{
+	for (auto &entry : *this)
+		entry.second.set_dictionary_path(_dictionary_path);
+}
+#endif // LOW_MEMORY_REQUIREMENT
+
+
 std::ostream & operator<<(std::ostream & os, const Core_Dictionary::Entry_type & entry)
 {
 	os << entry.entry_word() << u8"\n";
@@ -273,3 +220,60 @@ bool operator<(Core_Dictionary::const_Entry_iterator lhs, Core_Dictionary::const
 {
 	return (lhs->first < rhs->first);
 }
+
+inline Entry::Entry(const std::string & str, char delim)
+{
+	std::string::size_type word_beg = str.find_first_not_of(u8" \t\n");
+	std::string::size_type word_end = str.find(delim, word_beg);
+	first = str.substr(word_beg, word_end);
+
+	if (word_end != std::string::npos && word_end != str.size() - 1)
+		second = Definitions(str.substr(str.find_first_not_of(u8" \t\n", word_end + 1), str.find_last_not_of(u8" \t\n")));
+}
+
+inline Entry::Entry(std::istream & is, char delim1, char delim2)	//Definitions are initialized with Definitions(Description_type && _description) noexcept.
+{
+	while (isspace(is.peek())) is.get();
+	std::getline(is, first, delim1);
+
+	while (isspace(is.peek())) is.get();
+	std::string temp;
+	std::getline(is, temp, delim2);
+	second = Definitions(std::move(temp));
+}
+
+inline bool Entry::valid() const
+{
+	return !first.empty();
+}
+
+inline Entry2::Entry2(const std::string & _entry_word, std::streampos def_pos_beg, std::streampos def_pos_end)
+{
+	first = _entry_word;
+	second = DefinitionPos(def_pos_beg, def_pos_end);
+}
+
+inline Entry2::Entry2(std::istream & is, char delim1, char delim2)
+{
+	while (isspace(is.peek())) is.get();
+	std::getline(is, first, delim1);
+
+	while (isspace(is.peek())) is.get();
+	std::streampos def_pos_beg = is.tellg();
+	while (!is.eof() && is.get() != static_cast<int>(delim2));
+	std::streampos def_pos_end = is.tellg();
+	def_pos_end -= 1;	//Ignore delim2
+	second = DefinitionPos(def_pos_beg, def_pos_end);
+}
+
+inline Entry2::Entry2(const std::string & str, char delim)
+{
+	throw std::runtime_error("Trying to call Entry2(const std::string & str, char delim).");
+}
+
+inline void Entry2::set_dictionary_path(std::shared_ptr<std::string> _dictionary_path)
+{
+	second.set_dictionary_path(_dictionary_path);
+}
+	
+	

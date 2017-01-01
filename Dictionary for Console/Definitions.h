@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cctype>
+#include <iostream>
 
 class Definitions
 {
@@ -34,19 +35,26 @@ public:
 	//For entry with no definitions
 	Definitions();
 	//Used for simple definitions
-	Definitions(Description_type _description);
+	Definitions(const Description_type &_description);
 	Definitions(Description_type &&_description) noexcept;
 	//Given AttributeList, initialize with a series of descriptions. 
-	explicit Definitions(std::initializer_list<value_type> formatted_pairs);
-
-	//For temporary use
-	explicit Definitions(const std::vector<value_type> &formatted_pairs);
-	explicit Definitions(std::vector<value_type> &&formatted_pairs) noexcept;
 
 	explicit Definitions(const std::vector<Description_type> &_descriptions);
 
+	explicit Definitions(const std::vector<value_type> &formatted_pairs);
+	explicit Definitions(std::vector<value_type> &&formatted_pairs) noexcept;
+	explicit Definitions(std::initializer_list<value_type> formatted_pairs);
+
+
+	explicit Definitions(const std::string &str, char delim);	//Constructor do not check if str is valid.
+
+	explicit Definitions(std::istream &is, char delim1, char delim2);
+
 	Definitions(const Definitions &origin);
 	Definitions(Definitions &&origin) noexcept;
+
+	Definitions &operator=(const Definitions &origin);
+	Definitions &operator=(Definitions &&origin);
 
 	~Definitions();
 
@@ -56,6 +64,9 @@ public:
 	const_iterator end() const;
 	const_iterator cbegin() const;
 	const_iterator cend() const;
+
+	std::string get_raw() const;
+	void print() const;
 
 	//Description &operator[];
 	
