@@ -21,7 +21,7 @@
 class QueryResult;
 class RegexSupport
 {
-	friend class Generic_Dictionary;
+//	friend class Generic_Dictionary;
 
 	using key_type = std::string;
 	using mapped_type = Core_Dictionary::Entry_iterator;
@@ -33,8 +33,9 @@ private:
 
 	std::shared_ptr<std::multimap<std::string, Core_Dictionary::Entry_iterator>> String_PairTo_Dictionary;
 
-private:
+public:
 	void initialize_RegexSupport();
+
 	//There is no good way to way to order regex objects!
 	void emplace(const Core_Dictionary::Entry_iterator & new_entry);
 	void clear();
@@ -47,10 +48,9 @@ public:
 
 	explicit RegexSupport(const RegexSupport &origin);
 	RegexSupport(RegexSupport &&origin);
+	~RegexSupport();
 
-private:
 	QueryResult query_regex(const std::string &str) const;
 
-	~RegexSupport();
 };
 

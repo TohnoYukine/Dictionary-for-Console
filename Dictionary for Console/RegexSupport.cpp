@@ -34,7 +34,7 @@ void RegexSupport::reset(std::shared_ptr<Core_Dictionary::Dictionary_type> _dict
 }
 
 RegexSupport::RegexSupport(const Core_Dictionary & dict) :
-	dictionary(dict.dictionary),
+	dictionary(dict.dictionary_ptr()),
 	String_PairTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator>())
 {
 	initialize_RegexSupport();

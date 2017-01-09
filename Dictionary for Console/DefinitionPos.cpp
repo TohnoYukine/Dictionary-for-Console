@@ -77,6 +77,7 @@ std::ostream & operator<<(std::ostream & os, const DefinitionPos & definition)
 	std::streamoff sz = definition.def_end - definition.def_beg;
 	char *sink = new char[sz];
 	ifile.read(sink, sz);
+	ifile.close();
 	os << sink << u8'\n';
 	return os;
 }

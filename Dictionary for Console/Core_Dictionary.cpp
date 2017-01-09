@@ -40,7 +40,7 @@ Core_Dictionary::Core_Dictionary(std::initializer_list<Entry_type> entries) :
 }
 
 Core_Dictionary::Core_Dictionary(const Core_Dictionary &origin) : 
-	dictionary(origin.dictionary)
+	dictionary(new Dictionary_type(*origin.dictionary))
 {
 }
 
@@ -52,7 +52,7 @@ Core_Dictionary::Core_Dictionary(Core_Dictionary && origin) :
 
 Core_Dictionary & Core_Dictionary::operator=(const Core_Dictionary & rhs)
 {
-	dictionary = rhs.dictionary;
+	dictionary.reset(new Dictionary_type(*rhs.dictionary));
 	return *this;
 }
 
@@ -116,6 +116,16 @@ std::shared_ptr<Core_Dictionary::Entry_type> Core_Dictionary::erase_entry(QueryR
 	dictionary->erase(*(words.begin() + pos));
 	words.erase(pos);
 	return deleted_entry;
+}
+
+std::shared_ptr<Core_Dictionary::Dictionary_type> Core_Dictionary::dictionary_ptr()
+{
+	return dictionary;
+}
+
+std::shared_ptr<Core_Dictionary::Dictionary_type> Core_Dictionary::dictionary_ptr() const
+{
+	return dictionary;
 }
 
 void Core_Dictionary::operator+=(const Entry_type & entry)

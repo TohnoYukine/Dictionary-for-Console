@@ -38,6 +38,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using std::deque;
 
 namespace program_options = boost::program_options;
 
@@ -51,6 +52,7 @@ Core_Dictionary::Entry_type LingoesParser(istream &raw);
 Core_Dictionary::Entry_type LingoesOxfordParser(istream &raw);
 string html_to_string(const string &s);
 Generic_Dictionary load_dictionary(const string &dictionary_path);
+deque<string> file_list_fetcher(const string & input_dir);
 
 int main(int argc, char **argv)
 {
@@ -65,6 +67,7 @@ int main(int argc, char **argv)
 	program_options::store(program_options::parse_command_line(argc, argv, desc), vm);
 	program_options::notify(vm);
 
+	deque<string> file_list;
 	if (vm.count("help")) 
 	{
 		cout << desc << "\n";
@@ -77,8 +80,8 @@ int main(int argc, char **argv)
 			<< vm["import"].as<string>() << ".\n";
 	}
 	else {
-		cout << "No dictionary loaded! Exiting";
-		return 1;
+		cout << "No dictionary loaded! Reading files from current directory." << endl;
+		file_list = file_list_fetcher("");
 	}
 
 	Win32ConsoleColor::Initialize_Win32ConsoleColor();
@@ -87,7 +90,32 @@ int main(int argc, char **argv)
 
 	try
 	{
-		my_dictionary = load_dictionary(vm["import"].as<string>());
+		if (!vm["import"].empty())
+			my_dictionary = load_dictionary(vm["import"].as<string>());
+		else if (file_list.size() > 2)
+		{
+			int i = 0;
+			for (const auto &dictionary_path : file_list)
+				cout << i++ << "\t" << dictionary_path << "\n";
+			cout << "Select the dictionary file in folder" << endl;
+			int index;
+			cin >> index;
+			if (index >= 0 && index < file_list.size())
+			{
+				if (file_list[index].find(".txt") != string::npos)
+					my_dictionary = load_dictionary(file_list[index]);
+				else
+				{
+					std::cerr << "Invalid file type!" << endl;
+					return -1;
+				}			
+			}
+			else
+			{
+				std::cerr << "File not in the list" << endl;
+				return -1;
+			}
+		}
 	}
 	catch (std::runtime_error loading_failure)
 	{
@@ -115,7 +143,7 @@ int main(int argc, char **argv)
 				{
 					cout << Win32ConsoleColor(9) << result.size() << u8" entry found." << endl;
 					cout << Win32ConsoleColor(13) << result[0].entry_word() << u8'\n'
-						<< html_to_string(result[0].definitions().get_raw()) << endl;
+						<< (result[0].definitions().get_raw()) << endl;
 				}
 				else if (result.size() != 0)
 				{

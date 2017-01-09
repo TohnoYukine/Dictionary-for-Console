@@ -21,7 +21,7 @@
 class QueryResult;
 class WildcardStringSupport
 {
-	friend class Generic_Dictionary;
+//	friend class Generic_Dictionary;
 
 	using key_type = std::string;
 	using mapped_type = Core_Dictionary::Entry_iterator;
@@ -60,7 +60,7 @@ public:
 	//C++ Standard 23.1.2.8:
 	//The insert members shall not affect the validity of iterators and references to the container, and the erase members shall invalidate only iterators and references to the erased elements.
 
-protected:
+public:
 	void initialize_WildcardPrefix();	//For WildcardPrefix 
 	void initialize_WildcardSuffix();	//For WildcardSuffix
 	void initialize_WildcardWord();		//For WildcardWord
@@ -92,7 +92,7 @@ private:
 public:
 	void set_working_mode(bool enablePrefix, bool enableSuffix, bool enableInfix, bool enableAffix, bool enableWord, bool enableFixedPosition);
 
-private:
+public:
 	void emplace(const Core_Dictionary::Entry_iterator &new_entry);
 	void clear();
 	void reset();
@@ -100,9 +100,9 @@ private:
 
 public:
 	static WildcardType check_wildcard_type(const std::string &str);
+	QueryResult query_wildcard(const std::string &str) const;
 
 private:
-	QueryResult query_wildcard(const std::string &str) const;
 	inline QueryResult query_wildcard_prefix(const std::string &str) const;
 	inline QueryResult query_wildcard_suffix(const std::string &str) const;
 	inline QueryResult query_wildcard_infix(const std::string &str) const;

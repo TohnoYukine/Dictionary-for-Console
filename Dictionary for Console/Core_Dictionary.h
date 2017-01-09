@@ -111,9 +111,9 @@ public:
 	static Entry_type InvalidEntry;
 
 private:
-	friend class QueryResult;
-	friend class WildcardStringSupport;
-	friend class RegexSupport;
+//	friend class QueryResult;
+//	friend class WildcardStringSupport;
+//	friend class RegexSupport;
 
 //Data members
 protected:
@@ -161,7 +161,9 @@ public:
 	virtual std::shared_ptr<Dictionary_type> erase(QueryResult &words);	
 	virtual std::shared_ptr<Entry_type> erase_entry(QueryResult &words, Dictionary_type::size_type pos);	
 
-
+	//Used for initializing Support Packs. Provide access to data.
+	std::shared_ptr<Dictionary_type> dictionary_ptr();
+	std::shared_ptr<Dictionary_type> dictionary_ptr() const;
 
 public:
 	virtual void operator+=(const Entry_type &entry);		//Add Entry_type

@@ -277,7 +277,7 @@ QueryResult WildcardStringSupport::query_wildcard_word(const std::string & str) 
 }
 
 WildcardStringSupport::WildcardStringSupport(const Core_Dictionary &dict) :
-	dictionary(dict.dictionary),
+	dictionary(dict.dictionary_ptr()),
 	working_mode({ true,true,true,true,true,true }),
 	WildcardPrefix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(reverse_string_less)),
 	WildcardSuffix_MapTo_Dictionary(new std::multimap<std::string, Core_Dictionary::Entry_iterator, bool(*)(const std::string &lhs, const std::string &rhs)>(string_less)),

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="DefinitionPos">
+    <Position X="8.75" Y="5.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>CAQAAAAACAAAAAAAAAAQAAAgBACAAAAAEAAgAAAAAAA=</HashCode>
+      <FileName>DefinitionPos.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Definitions">
+    <Position X="6.25" Y="5.5" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAwAAAACAAAAAABAAAEAAAAQAABABAAAEAAgAkAAAAA=</HashCode>
+      <FileName>Definitions.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Entry">
+    <Position X="6.25" Y="1.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAUAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>Core_Dictionary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Entry2">
+    <Position X="8.75" Y="1.75" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAUAAAAAAAAAAAAAAAAAAAkAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Core_Dictionary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Entry_iterator">
+    <Position X="6.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Core_Dictionary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Entry2_iterator">
+    <Position X="8.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAgAAAAAAA=</HashCode>
+      <FileName>Core_Dictionary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Core_Dictionary">
+    <Position X="2.5" Y="1.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAACAABMAAhAAAgIgQA0AAIAAQAAAwAoAoAAQCA=</HashCode>
+      <FileName>Core_Dictionary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Generic_Dictionary">
+    <Position X="2.5" Y="8" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAIAEABIAAAAAAAIAQAAAAAAAAAAAQArAAAAQBA=</HashCode>
+      <FileName>Generic_Dictionary.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="QueryResult">
+    <Position X="11.25" Y="1.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AEQIAAADAAAAgABABIAIARAeAAEAAAAAEIAAAgAAAAA=</HashCode>
+      <FileName>QueryResult.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RegexSupport">
+    <Position X="13.75" Y="1.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AEAAQAAEAAAAIAgAAAAAAAAEYAAAAAAAAAAAAAAAQAA=</HashCode>
+      <FileName>RegexSupport.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="WildcardStringSupport">
+    <Position X="13.75" Y="5" Width="2.75" />
+    <NestedTypes>
+      <Enum Name="WildcardStringSupport::WildcardType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>WildcardStringSupport.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+      <Struct Name="WildcardStringSupport::WorkingMode" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>WildcardStringSupport.h</NewMemberFileName>
+        </TypeIdentifier>
+      </Struct>
+    </NestedTypes>
+    <TypeIdentifier>
+      <HashCode>AkUAAAKEAAAAAAgBAAABAgAEACAQAAAAAACAEAwASCA=</HashCode>
+      <FileName>WildcardStringSupport.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Win32ConsoleColor">
+    <Position X="16.25" Y="1.75" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAEAAAAgAAAABAAAAAAAQAAAAAAIAAwAAAAAAAAAAA=</HashCode>
+      <FileName>Win32ConsoleColor.h</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

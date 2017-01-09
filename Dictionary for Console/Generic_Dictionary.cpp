@@ -31,7 +31,7 @@ Generic_Dictionary::Generic_Dictionary(Generic_Dictionary && origin) :
 
 Generic_Dictionary & Generic_Dictionary::operator=(const Generic_Dictionary & rhs)
 {
-	dictionary = rhs.dictionary;
+	dictionary.reset(new Dictionary_type(*rhs.dictionary));
 	wildcard_string_support.reset(dictionary);
 	regex_support.reset(dictionary);
 	return *this;

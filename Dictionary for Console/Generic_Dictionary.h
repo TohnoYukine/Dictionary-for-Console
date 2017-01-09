@@ -22,7 +22,7 @@
 class Generic_Dictionary final : public Core_Dictionary
 {
 private:
-	friend class QueryResult;
+//	friend class QueryResult;
 
 private:
 	WildcardStringSupport wildcard_string_support;

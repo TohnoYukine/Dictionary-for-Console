@@ -35,6 +35,8 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::vector;
+using std::deque;
+using std::wstring;
 
 #ifdef HIGH_PERFORMANCE
 
@@ -167,3 +169,21 @@ Generic_Dictionary load_dictionary(const string & dictionary_path)
 	return my_dictionary;
 }
 
+deque<string> file_list_fetcher(const string & input_dir)
+{
+	string file_path = input_dir + '*';
+	deque<string> file_list;
+	wstring wfile_path(file_path.cbegin(), file_path.cend());
+	WIN32_FIND_DATA FindFileData;
+	size_t file_read = 1;
+	HANDLE hFind = FindFirstFile(wfile_path.c_str(), &FindFileData);
+	while (hFind != INVALID_HANDLE_VALUE) {
+		wstring file_name_wstr(FindFileData.cFileName);
+		string file_name(file_name_wstr.cbegin(), file_name_wstr.cend());
+		file_list.push_back(file_name);
+		if (FindNextFile(hFind, &FindFileData)) { continue; }
+		else { break; }
+	}
+	FindClose(hFind);
+	return file_list;
+}

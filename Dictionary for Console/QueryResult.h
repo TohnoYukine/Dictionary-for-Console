@@ -74,7 +74,7 @@ public:
 
 	//Temporaries used for debug.
 	void print_raw() const;			
-	std::string get_raw();			//Only the first result is returned.
+	std::string get_raw();
 
 	QueryResult &operator|=(const QueryResult &rhs);
 	QueryResult &operator&=(const QueryResult &rhs);
